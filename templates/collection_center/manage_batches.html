@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request(Batch Status)</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .color {
+            background-color: #28a745;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .pending {
+            background-color: #ff9800;
+        }
+
+        .completed {
+            background-color: #4caf50;
+        }
+
+        .cancelled {
+            background-color: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                width: 100%;
+            }
+
+            table {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar color text-light">
+        <div class="container-fluid">
+            <a class="navbar-brand text-light"><b>EcoRecycle</b></a>
+        </div>
+    </nav>
+    <!--Quotation Modal-->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="quotationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header" id="header">
+                    <h1 class="text-light" style="font-size: larger;font-weight:bold">Download as PDF</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <div class="row" id="download">
+                        <div class="modal-header bg-warning text-dark">
+                            <h2 class="modal-title" id="quotationModalLabel">
+                                <i style="font-size: larger;font-weight:bold">Quotation Confirmation</i>
+                            </h2>
+                        </div>
+                        <div class="container">
+                            <div class="row align-items-center mb-3">
+                                <div class="col">
+                                    <h3 class="text-uppercase" style="font-size: xx-large;font-weight:bold">Quotation
+                                    </h3>
+                                    <p><strong>Collection Center ID:</strong>
+                                        <span id="collection_id"></span><!--collection Center ID-->
+                                    </p>
+                                    <p><i>Date: <span id="date"></span></i></p>
+                                </div>
+                                <div class="col text-right">
+                                    <div id="qrcode" class="qrcode-placeholder"
+                                        style="width: 150px; height: 150px;text-align:right;float:right"></div>
+                                </div>
+                            </div>
+                            <!-- Authority Details -->
+                            <div class="row">
+                                <div class="col">
+                                    <div class="card mb-3">
+                                        <div class="card-header text-center bg-secondary text-white">
+                                            <h4>Sender Authority Details</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Name:</strong> <span id="sender_name">---</span></p>
+                                            <p><strong>Lead:</strong> <span aria-placeholder="dfdf"
+                                                    id="sender_lead">[Edit]</span></p>
+                                            <p><strong>Contact No.:</strong> <span id="sender_contact">[Edit]</span></p>
+                                            <p><strong>Address:</strong> <span id="sender_address"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card mb-3">
+                                        <div class="card-header text-center bg-secondary text-white">
+                                            <h4>Recipient Authority Details</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Name:</strong> <span id="producer_name">---</span></p>
+                                            <p><strong>Lead:</strong> <span id="producer_lead">---</span></p>
+                                            <p><strong>Lead:</strong> <span id="producer_contact">---</span></p>
+                                            <p><strong>Address:</strong> <span id="producer_address">---</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quotation Details -->
+                            <h4 class="text-uppercase mt-3 mb-2" style="font-size: larger;font-weight:bold">Quotation
+                                Details</h4>
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item Description</th>
+                                        <th>Batch Size</th>
+                                        <th>Base Price/product (INR)</th>
+                                        <th>Batch Cost (INR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>E-Waste Batch - [<span id="batch_id"></span>]</td>
+                                        <td id="quantity">No Items</td>
+                                        <td id="base_price">---</td>
+                                        <td id="total_amount1">No Items</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Additional Information -->
+                            <h4 class="text-uppercase mt-3 mb-2" style="font-size:larger;font-weight:bold">Additional
+                                Information</h4>
+                            <ul>
+                                <li><strong>Batch ID:</strong> <span id="batch_id1"></span></li>
+                                <li><strong>Collection Date:</strong> <span id="collection_date">[Edit]</span>
+                                </li>
+                                <li><strong>Expected Delivery Date:</strong> <span
+                                        id="expected_delivery_date">[Edit]</span>
+                                </li>
+                                <li><strong>Payment Terms:</strong> <span id="payment_terms">[Edit]</span>
+                                </li>
+                                <li><strong>Total Amount Payable (INR):</strong> ₹<span id="total_amount2"> [Total
+                                        Amount]</span></li>
+                            </ul>
+
+                            <!-- Note and Confirmation -->
+                            <div class="mt-4 p-3 bg-light border rounded">
+                                <p class="mb-0">
+                                    <strong>Note:</strong> Please confirm receipt and acceptance of this batch by
+                                    signing
+                                    below and returning a copy to us.
+                                </p>
+                            </div>
+
+                            <!-- Signature and Authorization -->
+                            <h4 class="text-uppercase mt-4"><b>Signature & Authorization</b></h4>
+                            <div>
+                                <p id="re_company_name">[Your Company’s Name]</p>
+                                <p id="delivery_address">[Delivery Address]</p>
+                                <p><strong>Authorized Signatory:</strong><span
+                                        id="signatory">___________________________</span> </p>
+                                <p><strong>Designation:</strong><span
+                                        id="designation">___________________________</span>
+                                </p>
+                            </div>
+
+                            <!-- Acceptance Section -->
+                            <h4 class="text-uppercase mt-4"><b><i>Acceptance</i></b></h4>
+                            <div>
+                                <p><strong><i>Signature:</i></strong><span id="signature">
+                                        ___________________________</span></p>
+                                <p><strong><i>Date:</i></strong><span id="confirmation_date">
+                                        ___________________________</span></p>
+                            </div>
+                            <div class="col" style="position:relative">
+                                <img src="" id="status" style="position: absolute;bottom:10px;right:10px" width="200px"
+                                    height="200px">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="downloadPDF()">Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="height: 100vh;">
+        <p class="text-success" style="font-size: x-large;font-weight:bold">Batch Managment and Distinct Status</p>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Batch ID</th>
+                    <th scope="col">Batch Name</th>
+                    <th scope="col">Batch Status</th>
+                    <th scope="col">Download Quotation</th>
+                    <th scope="col">Download QR</th>
+                    <th scope="col">Update Status</th>
+
+                </tr>
+            </thead>
+            <tbody id="fetch_table">
+                <!---fetching table-->
+            </tbody>
+        </table>
+    </div>
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+    <script>
+        sessionStorage.removeItem('status')
+        get_batches()
+        function get_batches() {
+            $.ajax({
+                type: 'POST',
+                url: "{{url_for('c_all_batches')}}",
+                success: function (response) {
+                    if (response.status == 'success') {
+                        var data = JSON.parse(response.data)
+                        var count = 0
+                        document.getElementById('fetch_table').innerHTML = ''
+                        for (var i = 0; i < data.length; i++) {
+                            var item = data[i]
+                            if (item['status']) {
+                                count++;
+                                document.getElementById('fetch_table').innerHTML += `
+                                <tr>
+                                    <th scope="row">${count}</th>
+                                    <td>${item['unique_id']}</td>
+                                    <td>${item['batch_name']}</td>
+                                    <td><span class="badge text-bg-${item['status'] == 'Accepted' ? 'success' : item['status'] == 'Pending' ? 'warning' : item['status'] == 'Dispatched' ? 'primary' : item['status'] == 'Rejected' ? 'danger' : item['status'] == 'Payment Released' ? 'secondary' : 'dark'}">${item['status']}</span></td>
+                                    <td><button id='download_btn' class='btn btn-warning' type='button' data-bs-toggle="modal" data-bs-target="#exampleModal" data-quotation='${JSON.stringify(item['quotation_data']).replace(/'/g, "&apos;").replace(/"/g, "&quot;")}' onclick='openModal(this,"${item['status']}")' ${item['status'] == 'Pending' ? 'disabled' : ''}>Download</button></td>
+                                    <td><button id='download_qr' class='btn btn-warning' type='button' onclick='downloadQRCode("${item['unique_id']}")' ${item['status'] == 'Pending' ? 'disabled' : ''}>Download QR</button></td>    
+                                    <td><div class="dropdown-center">
+                                      <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" ${item['status'] == 'Accepted' ? '' : 'disabled'}>
+                                        Update Status
+                                      </button>
+                                      <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" onclick='change_status("${item['unique_id']}")' href="#">Dispatch</a></li>
+                                      </ul>
+                                    </div>
+                                    </td>    
+                                </tr>`
+                            }
+
+                        }
+
+                    } else {
+                        if (response.status == 'error') {
+                            console.log(response.message)
+                        } else {
+                            alert('Something went wrong')
+                        }
+                    }
+
+                },
+                error: function (error) {
+                    alert('We encounter some technical problem')
+                    console, log(errorr)
+                }
+            })
+        }
+
+        function openModal(button, status) {
+            //console.log(status)
+            const quotationDataStr = button.getAttribute('data-quotation')
+                .replace(/&quot;/g, '"')
+                .replace(/&apos;/g, "'");
+            const data = JSON.parse(quotationDataStr);
+            document.getElementById('collection_id').innerHTML = ''
+            document.getElementById('collection_id').innerHTML = data['collection_id']
+            document.getElementById('batch_id').innerHTML = ''
+            document.getElementById('batch_id').innerHTML = data['batch_id']
+            document.getElementById('batch_id1').innerHTML = ''
+            document.getElementById('batch_id1').innerHTML = data['batch_id']
+            document.getElementById('date').innerHTML = ''
+            document.getElementById('date').innerHTML = data['date']
+            document.getElementById('sender_name').innerHTML = ''
+            document.getElementById('sender_name').innerHTML = data['sender_name']
+            document.getElementById('sender_lead').innerHTML = ''
+            document.getElementById('sender_lead').innerHTML = data['sender_lead']
+            document.getElementById('sender_contact').innerHTML = ''
+            document.getElementById('sender_contact').innerHTML = data['sender_contact']
+            document.getElementById('sender_address').innerHTML = ''
+            document.getElementById('sender_address').innerHTML = data['sender_address']
+            document.getElementById('quantity').innerHTML = ''
+            document.getElementById('quantity').innerHTML = data['quantity']
+            document.getElementById('base_price').innerHTML = ''
+            document.getElementById('base_price').innerHTML = data['base_price']
+            document.getElementById('producer_lead').innerHTML = ''
+            document.getElementById('producer_lead').innerHTML = data['producer_lead']
+            document.getElementById('producer_name').innerHTML = ''
+            document.getElementById('producer_name').innerHTML = data['producer_name']
+            document.getElementById('producer_address').innerHTML = ''
+            document.getElementById('producer_address').innerHTML = data['producer_address']
+            document.getElementById('producer_contact').innerHTML = ''
+            document.getElementById('producer_contact').innerHTML = data['producer_contact']
+            document.getElementById('total_amount1').innerHTML = ''
+            document.getElementById('total_amount1').innerHTML = data['total_amount']
+            document.getElementById('total_amount2').innerHTML = ''
+            document.getElementById('total_amount2').innerHTML = data['total_amount']
+            document.getElementById('collection_date').innerHTML = ''
+            document.getElementById('collection_date').innerHTML = data['collection_date']
+            document.getElementById('re_company_name').innerHTML = ''
+            document.getElementById('re_company_name').innerHTML = data['re_company_name']
+            document.getElementById('delivery_address').innerHTML = ''
+            document.getElementById('delivery_address').innerHTML = data['delivery_address']
+            document.getElementById('signatory').innerHTML = ''
+            document.getElementById('signatory').innerHTML = data['signatory']
+            document.getElementById('signatory').innerHTML = data['signatory']
+            document.getElementById('signatory').innerHTML = data['signatory']
+            document.getElementById('expected_delivery_date').innerHTML = ''
+            document.getElementById('expected_delivery_date').innerHTML = data['expected_delivery_date']
+            document.getElementById('designation').innerHTML = ''
+            document.getElementById('designation').innerHTML = data['designation']
+            document.getElementById('signature').innerHTML = ''
+            document.getElementById('signature').innerHTML = data['signature']
+            document.getElementById('payment_terms').innerHTML =''
+            document.getElementById('payment_terms').innerHTML =data['payment_terms']
+            document.getElementById('confirmation_date').innerHTML = ''
+            document.getElementById('confirmation_date').innerHTML = data['confirmation_date']
+            document.getElementById('qrcode').innerHTML = ''
+            document.getElementById('status').style.opacity = '1';
+            console.log(status)
+            document.getElementById('status').setAttribute('src', status == "Accepted" ? '/static/images/accept1.png' : '/static/images/reject.png')
+            var qrcode = new QRCode("qrcode", data['batch_id']);
+            if (status == "Accepted") {
+                document.getElementById('header').classList.add('bg-success');
+            } else {
+                document.getElementById('header').classList.add('bg-warning');
+            }
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const content = document.querySelector("#download");
+
+            // Set high resolution and capture full content with modified options
+            html2canvas(content, {
+                scale: 3,                 // Higher scale for better quality
+                scrollY: -window.scrollY, // Correct positioning issues
+                useCORS: true,            // Enables cross-origin content capture
+                backgroundColor: "#ffffff" // Sets background color to white
+            }).then((canvas) => {
+                const pdf = new jsPDF("p", "pt", "a4");
+
+                // Canvas dimensions
+                const imgData = canvas.toDataURL("image/png");
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                // Track remaining height
+                let position = 0;
+                let heightLeft = pdfHeight;
+
+                // Add pages if the content is taller than one page
+                while (heightLeft > 0) {
+                    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pdf.internal.pageSize.getHeight();
+                    position -= pdf.internal.pageSize.getHeight();
+                    if (heightLeft > 0) {
+                        pdf.addPage();
+                    }
+                }
+
+                pdf.save("quotation.pdf");
+            }).catch((error) => {
+                console.error("Error generating PDF:", error);
+            });
+        }
+
+        function downloadQRCode(id) {
+            var qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: id,
+                width: 400,
+                height: 400,
+                correctLevel: QRCode.CorrectLevel.H,
+            });
+
+            const canvas = document.querySelector("#qrcode canvas");
+            if (canvas) {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL("image/png"); // Convert canvas to image
+                link.download = 'QRCode.png'; // Name for the downloaded file
+                link.click(); // Trigger download
+            } else {
+                console.error("QR code canvas not found.");
+            }
+            document.getElementById("qrcode").innerHTML = ''
+        }
+
+        function change_status(id) {
+            if (confirm("Are you sure you want to change status to Dispatch?")) {
+                $.ajax({
+                    type: 'POST',
+                    url: "{{url_for('c_change_status')}}",
+                    data: { 'batch_id': id, 'status': 'Dispatched' },
+                    success: function (response) {
+                        if (response.status == 'success') {
+                            alert(response.message)
+                            get_batches()
+                        } else {
+                            if (response.status == 'error') {
+                                alert(response.message)
+                            } else {
+                                alert('Something went wrong')
+                            }
+                        }
+                    }
+                })
+            }
+        }
+    </script>
+</body>
+
+</html>

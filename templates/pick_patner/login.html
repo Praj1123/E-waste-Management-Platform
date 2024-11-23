@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pick-Up Partners Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+            background-image: url(/static/images/pickup_patner_bg.png);
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .login-container {
+            background-color: white;
+            width: 350px;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: slide-in 1s ease-out;
+            z-index: 10;
+        }
+
+        @keyframes slide-in {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border: 1px solid #007BFF;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Background animation */
+        .truck-container {
+            position: absolute;
+            bottom: 20px;
+            left: -300px;
+            width: 200px;
+            height: 100px;
+            background-image: url('https://i.imgur.com/fSTk8ML.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: move-truck 10s linear infinite;
+        }
+
+        @keyframes move-truck {
+            0% {
+                left: -300px;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <h2>Pick-up Partners Login</h2>
+        <div class="input-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username">
+        </div>
+        <button id="login-btn">Login</button>
+        <div id="error" class="error-message"></div>
+    </div>
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const username = document.getElementById('username').value;
+            const errorDiv = document.getElementById('error');
+            if (username === '') {
+                errorDiv.textContent = 'Username is required';
+            } else {
+                errorDiv.textContent = '';
+                find_pick_up_patner(username, errorDiv)
+            }
+        });
+
+        function find_pick_up_patner(username, errorDiv) {
+            $.ajax({
+                type: 'POST',
+                url: "{{url_for('find_pick_up_patner')}}",
+                data: { 'username': username },
+                success: function (response) {
+                    if (response.status == 'success') {
+                        let data = JSON.parse(response.data)
+                        localStorage.setItem('pick_up_partner_id', data["_id"]["$oid"])
+                        localStorage.setItem('patner_name', data['name'])
+                        localStorage.setItem('cc_id', data['added_by'])
+                        alert("User Log in succesfully")
+                        window.location.href = "/pick_up_home"
+                    } else {
+                        alert(response.message)
+                    }
+                },
+                error: function (e) {
+                    console.log(e)
+                    alert('We have some technical problem')
+                }
+            })
+        }
+    </script>
+
+</body>
+
+</html>

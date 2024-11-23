@@ -1,0 +1,4 @@
+flask
+vonage
+pymongo
+razorpay

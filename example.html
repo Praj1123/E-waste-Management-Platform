@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <h1>fruit Name</h1>
+  <div id="fruits">
+    <!--Fruits name will fetch here-->
+  </div>
+  <script>
+    window.onload = set_fruits_name();
+    function set_fruits_name() {
+      let obje = {
+        'name1': 'Prajwal',
+        'name2': 'Mayur',
+        'name3': 'Pooja',
+        'name4': 'Priya'
+      }
+      //console.log(obje['name1']);
+      for (var element in obje) {
+        document.getElementById('fruits').innerHTML += `${element} : ${obje[element]}</br>`
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="container" style="text-align: center;">
+        <button type="button" class="btn btn-primary" id="user">User</button>
+        <button type="button" class="btn btn-primary" id="cc">Collection Center</button>
+        <button type="button" class="btn btn-primary" id="producer">Producer</button>
+        <button type="button" class="btn btn-primary" id="pickup_patner">Pickup Patner</button>
+        <button type="button" class="btn btn-primary" id="qr_scanner">QR Scanner</button>
+    </div>
+    <script>
+        $("#user").click(function () {
+            window.open("/to_user", "_blank");
+        });
+        $("#cc").click(function () {
+            window.open("/to_cc", "_blank");
+        });
+        $("#producer").click(function () {
+            window.open("/to_producer", "_blank");
+        });
+        $("#pickup_patner").click(function () {
+            window.open("/to_pickup_patner", "_blank");
+        });
+        $("#qr_scanner").click(function () {
+            window.open("/to_qr_scanner", "_blank");
+        });
+    </script>
+</body>
+
+</html>

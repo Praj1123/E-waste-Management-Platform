@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product & Quotation Details</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Optional custom styling -->
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .card {
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-body p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .text-center h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body style="position: relative;">
+    <!-- Full-Page Background -->
+    <h2 style="position: absolute;top:1px;right:30px"><span class="badge" id="parent_class">Status: <spane id="status">
+                Dispatched</spane></span></h2>
+    <div class="container my-5 py-4" style="position: relative;">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold">Product & Quotation Details</h1>
+            <p class="text-muted">Detailed information about the product, quotation, and delivery.</p>
+        </div>
+        <div class="container">
+            <div class="row" id="fetch_data">
+                <!---fetching data-->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap Bundle JS and Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function renderData(data, mapping) {
+            Object.keys(mapping).forEach(dbKey => {
+                const htmlId = mapping[dbKey];
+                const element = document.getElementById(htmlId);
+                if (element && data[dbKey] !== undefined) {
+                    element.textContent = data[dbKey];
+                } else {
+                    console.warn(`No element found with id: ${htmlId} or data missing for key: ${dbKey}`);
+                }
+            })
+        }
+
+        function change_status(unique_id, status) {
+            if (confirm(`Are you really want to mark this batch as ${status}`)) {
+                $.ajax({
+                    type: 'POST',
+                    url: "{{url_for('p_change_batch_status')}}",
+                    data: { 'unique_id': unique_id, 'status': status },
+                    success: function (response) {
+                        if (response.status == 'success') {
+                            alert(response.message)
+                            window.location.href = '/to_producer';
+                        } else {
+                            alert(response.message)
+                        }
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+                })
+            }
+        }
+
+        get_delivery_batches_data()
+        function get_delivery_batches_data() {
+            var unique_id = sessionStorage.getItem('delivery_batch_id');
+            $.ajax({
+                type: 'POST',
+                url: "{{url_for('get_Delivery_batch_data')}}",
+                data: { "unique_id": unique_id },
+                success: function (response) {
+                    if (response.status == 'success') {
+                        var data = JSON.parse(response.data)
+                        data = data[0]
+                        document.getElementById('fetch_data').innerHTML = `
+                         <div class="col">
+                    <!-- Product Information -->
+                    <div class="card shadow-lg mb-5 border-0">
+                        <div class="card-header bg-info text-white d-flex align-items-center">
+                            <i class="bi bi-box-seam me-2"></i> Product Information
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Batch Name:</strong> <span id="batchName">${data['batch_name']}</span></p>
+                            <p><strong>Unique ID:</strong> <span id="uniqueId">${data['unique_id']}</span></p>
+                            <p><strong>Brand:</strong> <span id="brand">${data['brand']}</span></p>
+                            <p><strong>Product Name:</strong> <span id="productName">${data['product_name']}</span></p>
+                            <p><strong>Product Model:</strong> <span id="productModel">${data['product_model']}</span></p>
+                            <p><strong>Product Category:</strong> <span id="productCategory">${data['product_category']}</span>
+                            </p>
+                            <p><strong>Specifications:</strong> <span id="productSpecification">${data['product_specification']}</span>
+                            </p>
+                            <p><strong>Base Price:</strong> <span id="productBasePrice">₹${data['product_baseprice']}</span></p>
+                        </div>
+                    </div>
+                    <!-- Quotation Details -->
+                    <div class="card shadow-lg mb-5 border-0">
+                        <div class="card-header bg-warning text-dark d-flex align-items-center">
+                            <i class="bi bi-file-earmark-text-fill me-2"></i> Quotation Details
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Quotation Date:</strong> <span id="quotationDate">${data['quotation_data']['date']}</span></p>
+                            <p><strong>Collection Date:</strong> <span id="collectionDate">${data['quotation_data']['collection_date']}</span></p>
+                            <p><strong>Expected Delivery Date:</strong> <span
+                                    id="expectedDeliveryDate">${data['quotation_data']['expected_delivery_date']}</span></p>
+                            <p><strong>Quantity:</strong> <span id="quantity">${data['quotation_data']['quantity']}</span></p>
+                            <p><strong>Base Price:</strong> <span id="basePrice">₹${data['quotation_data']['base_price']}</span></p>
+                            <p><strong>Total Amount:</strong> <span id="totalAmount">₹${data['quotation_data']['total_amount']}</span></p>
+                            <p><strong>Payment Terms:</strong> <span id="paymentTerms">${data['quotation_data']['payment_terms']}</span></p>
+                            <p><strong>Status:</strong> <span id="status">${data['status']}</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <!-- Producer Information -->
+                    <div class="card shadow-lg mb-5 border-0">
+                        <div class="card-header bg-success text-white d-flex align-items-center">
+                            <i class="bi bi-person-badge-fill me-2"></i> Producer Information
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Producer Name:</strong> <span id="producerName">${data['quotation_data']['producer_name']}</span></p>
+                            <p><strong>Producer Lead:</strong> <span id="producerLead">${data['quotation_data']['producer_lead']}</span></p>
+                            <p><strong>Producer Address:</strong> <span id="producerAddress">${data['quotation_data']['producer_address']}</span>
+                            </p>
+                            <p><strong>Producer Contact:</strong> <span id="producerContact">${data['quotation_data']['producer_contact']}</span></p>
+                        </div>
+                    </div>
+                    <!-- Delivery Details -->
+                    <div class="card shadow-lg mb-5 border-0">
+                        <div class="card-header bg-primary text-white d-flex align-items-center">
+                            <i class="bi bi-truck me-2"></i> Delivery Details
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Sender Name:</strong> <span id="senderName">${data['quotation_data']['sender_name']}</span></p>
+                            <p><strong>Sender Address:</strong> <span id="senderAddress">${data['quotation_data']['sender_address']}</span></p>
+                            <p><strong>Sender Contact:</strong> <span id="senderContact">${data['quotation_data']['sender_contact']}</span></p>
+                            <p><strong>Delivery Address:</strong> <span id="deliveryAddress">${data['quotation_data']['delivery_address']}</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Signatory Details -->
+                    <div class="card shadow-lg mb-5 border-0">
+                        <div class="card-header bg-dark text-white d-flex align-items-center">
+                            <i class="bi bi-pencil-square me-2"></i> Signatory
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Signatory:</strong> <span id="signatory">${data['quotation_data']['signatory']}</span></p>
+                            <p><strong>Designation:</strong> <span id="designation">${data['quotation_data']['designation']}</span></p>
+                            <p><strong>Signature:</strong> <span id="signature">${data['quotation_data']['signature']}</span></p>
+                            <p><strong>Confirmation Date:</strong> <span id="confirmationDate">${data['quotation_data']['confirmation_date']}</span></p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary" id='received' onclick='change_status("${unique_id}","Received")' style='float:right;display:none'>Mark Received</button>
+                    <button type="button" class="btn btn-outline-info" id='payment_released' onclick='change_status("${unique_id}","Payment Released")' style='float:right;display:none'>Payment Released</button>
+                </div>
+                        `
+                        document.getElementById('status').innerHTML = data['status']
+                        if (data['status'] == 'Payment Released') {
+                            document.getElementById('parent_class').classList.add('text-bg-info')
+                        } else {
+                            if (data['status'] == 'Received') {
+                                document.getElementById('parent_class').classList.add('text-bg-success')
+                            } else {
+                                if (data['status'] == 'Dispatched') {
+                                    document.getElementById('parent_class').classList.add('text-bg-warning')
+                                }
+                            }
+                        }
+                        if (data['status'] == 'Dispatched') {
+                            document.getElementById('received').style.display = 'block'
+                            document.getElementById('payment_released').style.display = 'none'
+                        } else {
+                            if (data['status'] == 'Received') {
+                                document.getElementById('payment_released').style.display = 'block'
+                                document.getElementById('received').style.display = 'none'
+                            }
+                        }
+                    } else {
+                        console.log(response.message)
+                    }
+                },
+                error: function (error) {
+
+                    console.log("Error fetching data:", error);
+                }
+            })
+
+        }
+    </script>
+</body>
+
+</html>

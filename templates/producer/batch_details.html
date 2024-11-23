@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <div class="modal" id="myModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_title">---</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="model-content"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar bg-success color text-light">
+        <div class="container-fluid">
+            <a class="navbar-brand text-light"><b>EcoRecycle</b></a>
+        </div>
+    </nav>
+    <div class="container mt-5 mb-5 border" style="width: 900px;">
+        <div class="row bg-warning">
+            <h2 class="modal-title" id="quotationModalLabel">
+                <i style="font-size: larger;font-weight:bold">Quotation Confirmation</i>
+            </h2>
+        </div>
+        <div class="row align-items-center mb-1">
+            <div class="col">
+                <p><strong>Collection Center ID:</strong>
+                    <span id="collection_id"></span><!--collection Center ID-->
+                </p>
+                <p><i>Date: <span id="date"></span></i></p>
+            </div>
+            <div class="col text-right">
+                <div class="mt-3 mb-3" id="qrcode" style="width: 10px;height:auto;margin-left:150px">
+                </div>
+            </div>
+        </div>
+        <!-- Authority Details -->
+        <div class="row">
+            <div class="col">
+                <div class="card mb-3">
+                    <div class="card-header text-center bg-secondary text-white">
+                        <h4>Sender Authority Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Name:</strong> <span id="sender_name">---</span>
+                        </p>
+                        <p><strong>Lead:</strong> <span id="sender_lead"></span></p>
+                        <p><strong>Contact No.:</strong> <span id="sender_contact"></span>
+                        </p>
+                        <p><strong>Address:</strong> <span id="sender_address"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card mb-3">
+                    <div class="card-header text-center bg-secondary text-white">
+                        <h4>Recipient Authority Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Name:</strong> <span id="producer_name">---</span></p>
+                        <p><strong>Lead:</strong> <span id="producer_lead">---</span></p>
+                        <p><strong>Contact:</strong> <span id="producer_contact" contenteditable="true">[Edit]</span>
+                        </p>
+                        <p><strong>Address:</strong> <span id="producer_address">---</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quotation Details -->
+        <h4 class="text-uppercase mt-3 mb-2" style="font-size: larger;font-weight:bold">Quotation
+            Details</h4>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Item Description</th>
+                    <th>Batch Size</th>
+                    <th>Base Price/product (INR)</th>
+                    <th>Batch Cost (INR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>E-Waste Batch - [<span id="batch_id"></span>]</td>
+                    <td id="quantity">No Items</td>
+                    <td id="base_price">---</td>
+                    <td id="total_amount1">No Items</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Additional Information -->
+        <h4 class="text-uppercase mt-3 mb-2" style="font-size:larger;font-weight:bold">Additional
+            Information</h4>
+        <ul>
+            <li><strong>Batch ID:</strong> <span id="batch_id1"></span></li>
+            <li><strong>Collection Date:</strong> <span id="collection_date">[Edit]</span>
+            </li>
+            <li><strong>Expected Delivery Date:</strong> <span id="expected_delivery_date">[Edit]</span>
+            </li>
+            <li><strong>Payment Terms:</strong> <span id="payment_terms">[Edit]</span>
+            </li>
+            <li><strong>Total Amount Payable (INR):</strong> ₹<span id="total_amount2"> [Total
+                    Amount]</span></li>
+        </ul>
+
+        <!-- Note and Confirmation -->
+        <div class="mt-4 p-3 bg-light border rounded">
+            <p class="mb-0">
+                <strong>Note:</strong> Please confirm receipt and acceptance of this
+                batch by signing
+                below and returning a copy to us.
+            </p>
+        </div>
+        <div class="row">
+            <p class="text-danger mt-4 text-center" style="font-size: large;font-weight:bold;"><u>Details to be filled
+                    by Producer</u></p>
+            <div class="col">
+                <h4 class="text-uppercase mt-4"><b>Signature & Authorization</b></h4>
+                <div>
+                    <p contenteditable="true" id="re_company_name">[Re-Enter Company Name]</p>
+                    <p contenteditable="true" id="delivery_address">[Delivery Address]</p>
+                    <p><strong>Authorized Signatory:</strong> <span id="signatory" contenteditable="true">
+                            ___________________________</span>
+                    </p>
+                    <p><strong>Designation:</strong>
+                        <span contenteditable="true" id="designation">___________________________</span>
+                    </p>
+                </div>
+
+                <!-- Acceptance Section -->
+                <h4 class="text-uppercase mt-4"><b><i>Acceptance</i></b></h4>
+                <div>
+                    <p><strong><i>Signature:</i></strong><span contenteditable="true"
+                            id="signature">___________________________</span>
+                    </p>
+                    <p><strong><i>Date:</i></strong> <span contenteditable="true"
+                            id="confirmation_date">___________________________</span></p>
+                </div>
+            </div>
+            <div class="col" style="position:relative">
+                <img src="" id="status" style="position: absolute;top:100px;right:100px;opacity:0" width="200px"
+                    height="200px">
+            </div>
+        </div>
+        <p class="text-warning mt-3"><b>Note: This is system generated quotation,
+                hence it is already
+                verified by sender authority.</b></p>
+    </div>
+    <div class="container mb-5" style="text-align: right;width: 900px">
+        <button class="btn btn-success" id="accept">Accept</button>
+        <button class=" btn btn-danger ml-3" id="reject">Reject</button>
+        <button class=" btn btn-outline-success ml-3" id="confirm" disabled>Confirm</button>
+    </div>
+    <script src="jquery-3.7.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        function showModal(title, content) {
+            const myModal = new bootstrap.Modal(document.getElementById('myModal'));
+            document.getElementById('modal_title').innerHTML = title;
+            document.getElementById('model-content').innerHTML = content;
+            myModal.show()
+        }
+
+        function hideModal() {
+            const myModal = new bootstrap.Modal(document.getElementById('myModal'));
+            myModal.hide()
+        }
+
+        var statu;
+        document.getElementById('accept').addEventListener('click', () => {
+            statu = 'Accepted'
+            document.getElementById('status').style.opacity = '1';
+            document.getElementById('status').setAttribute('src', '/static/images/accept1.png')
+            document.getElementById('confirm').disabled = false
+            document.getElementById('accept').disabled = true
+            document.getElementById('reject').disabled = true
+        })
+
+        document.getElementById('reject').addEventListener('click', () => {
+            statu = 'Rejected'
+            document.getElementById('status').style.opacity = '1';
+            document.getElementById('status').setAttribute('src', '/static/images/reject.png')
+            document.getElementById('confirm').disabled = false
+            document.getElementById('reject').disabled = true
+            document.getElementById('accept').disabled = true
+        })
+
+        function getQuotationValues() {
+            return {
+                collection_id: document.getElementById("collection_id")?.textContent || "N/A",
+                date: document.getElementById("date")?.textContent || "N/A",
+
+                // Sender Details
+                sender_name: document.getElementById("sender_name")?.textContent || "N/A",
+                sender_lead: document.getElementById("sender_lead")?.textContent || "N/A",
+                sender_address: document.getElementById("sender_address")?.textContent || "N/A",
+                sender_contact: document.getElementById("sender_contact")?.textContent || "N/A",
+
+                // Producer/Recipient Details
+                producer_name: document.getElementById("producer_name")?.textContent || "N/A",
+                producer_lead: document.getElementById("producer_lead")?.textContent || "N/A",
+                producer_address: document.getElementById("producer_address")?.textContent || "N/A",
+                producer_contact: document.getElementById("producer_contact")?.textContent || "N/A",
+
+                // Quotation Details
+                batch_id: document.getElementById("batch_id")?.textContent || "N/A",
+                quantity: document.getElementById("quantity")?.textContent || "N/A",
+                base_price: document.getElementById("base_price")?.textContent || "N/A",
+                total_amount: document.getElementById("total_amount1")?.textContent || "N/A",
+
+                // Additional Information
+                collection_date: document.getElementById("collection_date")?.textContent || "N/A",
+                expected_delivery_date: document.getElementById("expected_delivery_date")?.textContent || "N/A",
+                payment_terms: document.getElementById("payment_terms")?.textContent || "N/A",
+
+                // New Fields
+                re_company_name: document.getElementById("re_company_name")?.textContent || "N/A",
+                delivery_address: document.getElementById("delivery_address")?.textContent || "N/A",
+                signatory: document.getElementById("signatory")?.textContent || "N/A",
+                designation: document.getElementById("designation")?.textContent || "N/A",
+                signature: document.getElementById("signature")?.textContent || "N/A",
+                confirmation_date: document.getElementById("confirmation_date")?.textContent || "N/A"
+            };
+        }
+
+        get_quotation()
+        function get_quotation() {
+            var batch_id = sessionStorage.getItem('batch_id')
+            if (batch_id) {
+                $.ajax({
+                    type: 'POST',
+                    url: "{{url_for('get_quotation')}}",
+                    data: { 'batch_id': batch_id },
+                    success: function (response) {
+                        if (response.status == 'success') {
+                            var data = response.data
+                            data = JSON.parse(data)
+                            data = data['quotation_data']
+                            console.log(data)
+                            cc_id = data['collection_id']
+                            producer_id = data['producer_id']
+                            document.getElementById('collection_id').innerHTML = ''
+                            document.getElementById('collection_id').innerHTML = data['collection_id']
+                            document.getElementById('batch_id').innerHTML = ''
+                            document.getElementById('batch_id').innerHTML = data['batch_id']
+                            document.getElementById('batch_id1').innerHTML = ''
+                            document.getElementById('batch_id1').innerHTML = data['batch_id']
+                            document.getElementById('date').innerHTML = ''
+                            document.getElementById('date').innerHTML = data['date']
+                            document.getElementById('sender_name').innerHTML = ''
+                            document.getElementById('sender_name').innerHTML = data['sender_name']
+                            document.getElementById('sender_lead').innerHTML = ''
+                            document.getElementById('sender_lead').innerHTML = data['sender_lead']
+                            document.getElementById('sender_contact').innerHTML = ''
+                            document.getElementById('sender_contact').innerHTML = data['sender_contact']
+                            document.getElementById('sender_address').innerHTML = ''
+                            document.getElementById('sender_address').innerHTML = data['sender_address']
+                            document.getElementById('quantity').innerHTML = ''
+                            document.getElementById('quantity').innerHTML = data['quantity']
+                            document.getElementById('base_price').innerHTML = ''
+                            document.getElementById('base_price').innerHTML = data['base_price']
+                            document.getElementById('producer_lead').innerHTML = ''
+                            document.getElementById('producer_lead').innerHTML = data['producer_lead']
+                            document.getElementById('producer_name').innerHTML = ''
+                            document.getElementById('producer_name').innerHTML = data['producer_name']
+                            document.getElementById('producer_address').innerHTML = ''
+                            document.getElementById('producer_address').innerHTML = data['producer_address']
+                            document.getElementById('producer_contact').innerHTML = ''
+                            document.getElementById('producer_contact').innerHTML = data['producer_contact']
+                            document.getElementById('total_amount1').innerHTML = ''
+                            document.getElementById('total_amount1').innerHTML = data['total_amount']
+                            document.getElementById('total_amount2').innerHTML = ''
+                            document.getElementById('total_amount2').innerHTML = data['total_amount']
+                            document.getElementById('collection_date').innerHTML = ''
+                            document.getElementById('collection_date').innerHTML = data['collection_date']
+                            document.getElementById('expected_delivery_date').innerHTML = ''
+                            document.getElementById('expected_delivery_date').innerHTML = data['expected_delivery_date']
+                            document.getElementById('payment_terms').innerHTML = ''
+                            document.getElementById('payment_terms').innerHTML = data['payment_terms']
+                            document.getElementById('qrcode').innerHTML = ''
+                            var qrcode = new QRCode("qrcode", data['batch_id']);
+                        } else {
+                            alert('Details not available')
+                        }
+                    },
+                    error: function (error) {
+                        alert('We encountered some technical issue')
+                        console.log(error)
+                    }
+                })
+
+            } else {
+                alert('Batch Id Not Found')
+            }
+        }
+
+
+
+        document.getElementById('confirm').addEventListener('click', () => {
+            $.ajax({
+                type: 'POST',
+                url: "{{ url_for('finalize_quotation') }}",
+                contentType: "application/json",  // Set the content type
+                data: JSON.stringify({              // Stringify the data object
+                    'batch_id': sessionStorage.getItem('batch_id'),
+                    'quotation_data': getQuotationValues()
+                }),
+                success: function (response) {
+                    if (response.status === 'success') {
+                        showModal(`<span class='text-success'>Quotation Alert</span>`, `<span class='text-success'>Quotation ${statu} successfully</span>`)
+                        window.location.href = "/to_producer"
+                    } else {
+                        showModal(`<span class='text-danger'>Quotation Alert</span>`, `<span class='text-danger'> Failed to ${statu} Quotation</span>`)
+                        console.log(response.message);
+                    }
+                },
+                error: function (error) {
+                    showModal(`<span class='text-danger'>Quotation Alert</span>`, `<span class='text-danger'> We have some technical problem while processing request. SORRY...</span>`)
+                    console.log(error);
+                }
+            });
+
+        })
+
+
+    </script>
+
+</body>
+
+</html>
