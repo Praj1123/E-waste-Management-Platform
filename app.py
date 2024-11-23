@@ -69,7 +69,8 @@ def payment_success():
 app.secret_key = "hellow_EcoRecycle"
 try:
     # Connect to the MongoDB server
-    client = MongoClient("mongodb://localhost:27017/")
+    client = MongoClient("mongodb+srv://prajwalchaudhari762:CBXSxTBk5NUvgHkN@cluster0.r0i8k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    #mongodb://localhost:27017/
     # Check the connection by retrieving the server info
     client.server_info()  # This will raise an exception if the connection fails
 
