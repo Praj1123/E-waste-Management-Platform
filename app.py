@@ -2032,6 +2032,72 @@ def get_ewaste_metrics():
     except Exception as e:
         print("Error in /get_ewaste_metrics:", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
+    
+    
+#Get the top 5 e waste metrics
+@app.route('/get_top_categories', methods=['GET'])
+def get_top_categories():
+    # Get the producer_id from query parameters
+    producer_id = request.args.get('producer_id', None)
+    if not producer_id:
+        return jsonify({"error": "producer_id is required"}), 400
+
+    # Query MongoDB to count items per category for the specified producer
+    pipeline = [
+        {"$match": {"producer_id": producer_id}},  # Filter by producer_id
+        {"$group": {
+            "_id": "$product_category",
+            "count": {"$sum": 1}  # Count occurrences of each category
+        }},
+        {"$sort": {"count": -1}},  # Sort by count in descending order
+        {"$limit": 5}  # Get the top 5 categories
+    ]
+    top_categories = list(db.batches.aggregate(pipeline))
+
+    # Prepare data for the frontend
+    response = {
+        "categories": [item["_id"] for item in top_categories],
+        "counts": [item["count"] for item in top_categories]
+    }
+    return jsonify(response)
+
+@app.route('/get_e_waste_weights', methods=['GET'])
+def get_e_waste_weights():
+    try:
+        # Map to shorten category names
+        category_mapping = {
+            "consumer-electronics": "Consumer Electronics",
+            "computer": "Computers",
+            "mobile-devices": "Mobile Devices",
+            "gaming-accessories": "Gaming Accessories",
+            "networking-equipment": "Networking Equipment"
+        }
+
+        # Aggregate weight by category
+        category_weights = {}
+        batches = db.batches.find()
+
+        for batch in batches:
+            category = batch.get("product_category", "Unknown").split()[0]  # Shorten name
+            category = category_mapping.get(category, category)  # Map to short name
+            items = batch.get("items", [])
+            
+            for item_id in items:
+                item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
+                if item_data:
+                    item = item_data["pick_up_requests"].get(item_id)
+                    if item:
+                        weight = float(item.get("weight", 0))
+                        category_weights[category] = category_weights.get(category, 0) + weight
+
+        # Convert to list for JSON response
+        data = [{"category": cat, "weight": wt} for cat, wt in category_weights.items()]
+
+        return jsonify({"status": "success", "data": data})
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

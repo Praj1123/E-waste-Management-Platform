@@ -61,6 +61,21 @@
       height: 100vh;
     }
 
+    .tooltip-box {
+      background-color: #fff;
+      color: #333;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+
+
 
     /* ---------- HEADER ---------- */
 
@@ -359,7 +374,7 @@
       <div class="main-title">
         <p class="font-weight-bold">E-WASTE MANAGEMENT DASHBOARD</p>
       </div>
-    
+
       <!-- Updated Cards for E-Waste Management Metrics -->
       <div class="main-cards" id="metrics-cards">
         <div class="card">
@@ -399,13 +414,12 @@
           <div id="area-chart"></div>
         </div>
       </div>
-      <div class="text-center" style="text-align: center;">
-        <p class="chart-title">Quarterly Data Overview</p>
-      </div>
+
+
       <div class="charts">
         <div class="charts-card">
-          <p class="chart-title">Collected E-Waste by Center (in tons)</p>
-          <canvas id="barChart"></canvas>
+          <p class="chart-title">E-Waste Category Distribution</p>
+          <canvas id="pieChart-1" width="400" height="400"></canvas>
         </div>
         <div class="charts-card">
           <p class="chart-title">E-Waste Processing Breakdown</p>
@@ -413,8 +427,8 @@
           <div id="area-chart"></div>
         </div>
       </div>
-      </div>
-    </main>
+  </div>
+  </main>
   </div>
 
   <!-- JavaScript code to generate charts and download PDF -->
@@ -465,31 +479,94 @@
     // Run the function to initialize charts on page load
     window.onload = initCharts;
   </script>
+
+
   <!-- Scripts -->
+  <!-- Include ApexCharts library -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> -->
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+
   <script>
-    // JavaScript for Chart Customization with Relevant Data
 
     // BAR CHART: Top E-Waste Categories
-    var barChartOptions = {
-      series: [{
-        data: [15, 10, 8, 6, 5] // Sample data for e-waste categories
-      }],
-      chart: {
-        type: 'bar',
-        height: 350,
-        toolbar: { show: false }
-      },
-      colors: ["#246dec", "#cc3c43", "#367952", "#f5b74f", "#4f35a1"],
-      plotOptions: { bar: { distributed: true, borderRadius: 4, horizontal: false, columnWidth: '40%' } },
-      dataLabels: { enabled: false },
-      legend: { show: false },
-      xaxis: { categories: ["Mobiles", "Laptops", "Batteries", "Monitors", "Printers"] },
-      yaxis: { title: { text: "Quantity (kg)" } }
-    };
 
-    var barChart = new ApexCharts(document.querySelector("#bar-chart"), barChartOptions);
-    barChart.render();
+    // Function to fetch data and render the chart dynamically
+    async function fetchTopCategories(producerId) {
+      try {
+        // Fetch the data from the backend
+        const response = await fetch(`/get_top_categories?producer_id=${producerId}`);
+        const data = await response.json();
+
+        // Check for errors in the response
+        if (data.error) {
+          console.error(data.error);
+          return;
+        }
+
+        // Extract categories and counts from the response
+        const fullCategories = data.categories; // Full category names
+        const counts = data.counts; // Counts for each category
+
+        // Shorten category names for the x-axis
+        const shortenedCategories = fullCategories.map(category =>
+          category.split(' ').slice(0, 2).join(' ') // First two words
+        );
+
+        // Define bar chart options with dynamic data
+        var barChartOptions = {
+          series: [{
+            data: counts // Dynamically populate the data
+          }],
+          chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: { show: false }
+          },
+          colors: ["#246dec", "#cc3c43", "#367952", "#f5b74f", "#4f35a1"],
+          plotOptions: {
+            bar: {
+              distributed: true, // Different colors for bars
+              borderRadius: 4,   // Rounded corners
+              horizontal: false, // Vertical bar chart
+              columnWidth: '40%' // Adjust width of bars
+            }
+          },
+          dataLabels: { enabled: false }, // Disable labels on bars
+          legend: { show: false },        // Disable legend
+          xaxis: {
+            categories: shortenedCategories // Shortened category names on x-axis
+          },
+          yaxis: {
+            title: { text: "Quantity" } // Label for y-axis
+          },
+          tooltip: {
+            custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+              // Display full category name and count on hover
+              const fullCategory = fullCategories[dataPointIndex]; // Get full name
+              const count = series[0][dataPointIndex]; // Get count
+              return `<div class="tooltip-box">
+                      <strong>Category:</strong> ${fullCategory}<br>
+                      <strong>Collected:</strong> ${count}
+                    </div>`;
+            }
+          }
+        };
+
+        // Render the chart
+        var barChart = new ApexCharts(document.querySelector("#bar-chart"), barChartOptions);
+        barChart.render();
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    // Fetch and render data for a specific producer
+    fetchTopCategories("662f447c17b38db02618b53d");
+
+
+
 
     // AREA CHART: E-Waste Collection Trend
     var areaChartOptions = {
@@ -515,36 +592,97 @@
   </script>
 
 
-    <script>
-  // Fetch and update the metrics dynamically
-  async function fetchMetrics() {
-    try {
-      const response = await fetch('/get_ewaste_metrics', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+  <div class="charts-card">
+    <p class="chart-title">E-Waste Category Distribution</p>
+    <canvas id="pieChart-1" width="400" height="400"></canvas>
+  </div>
+
+  <script>
+    // Fetch and update the metrics dynamically
+    document.addEventListener('DOMContentLoaded', function () {
+      fetch('/get_e_waste_weights')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            const chartData = data.data;
+            const categories = chartData.map(item => item.category);
+            const weights = chartData.map(item => item.weight);
+
+            // Get the canvas element
+            const chartElement = document.getElementById("pieChart-1"); // Update the ID to match the HTML element
+            if (!chartElement) {
+              console.error('Canvas element #pieChart-1 not found');
+              return;
+            }
+
+            // Create a normal Pie Chart
+            new Chart(chartElement, {
+              type: "pie", // Pie chart type
+              data: {
+                labels: categories, // Categories as labels
+                datasets: [{
+                  data: weights, // Weights as data
+                  backgroundColor: ["#00796B", "#FF8F00", "#D32F2F"], // Colors for each segment
+                }],
+              },
+              options: {
+                responsive: true, // Makes the chart responsive
+                plugins: {
+                  legend: {
+                    position: "bottom", // Position of the legend
+                    labels: {
+                      fontSize: 14, // Font size of the legend
+                    },
+                  },
+                  tooltip: {
+                    enabled: true, // Tooltip enabled on hover
+                    y: {
+                      formatter: function (val) {
+                        return `${val} kg`; // Format the tooltip to show kg
+                      },
+                    },
+                  },
+                },
+              },
+            });
+          } else {
+            console.error("Failed to fetch data:", data.message);
+          }
+        })
+        .catch(err => console.error("Error fetching data:", err));
+    });
+  </script>
+
+  <script>
+    // Fetch and update the metrics dynamically
+    async function fetchMetrics() {
+      try {
+        const response = await fetch('/get_ewaste_metrics', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          document.getElementById('total-ewaste').textContent = data.total_ewaste + ' kg';
+          document.getElementById('compliance-rate').textContent = data.compliance_rate + '%';
+          document.getElementById('products-epr').textContent = data.products_under_epr;
+          document.getElementById('processed-ewaste').textContent = data.processed_this_month + ' kg';
+        } else {
+          console.error('Failed to fetch metrics:', data.message);
         }
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        document.getElementById('total-ewaste').textContent = data.total_ewaste + ' kg';
-        document.getElementById('compliance-rate').textContent = data.compliance_rate + '%';
-        document.getElementById('products-epr').textContent = data.products_under_epr;
-        document.getElementById('processed-ewaste').textContent = data.processed_this_month + ' kg';
-      } else {
-        console.error('Failed to fetch metrics:', data.message);
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
       }
-    } catch (error) {
-      console.error('Error fetching metrics:', error);
     }
-  }
 
-  // Call fetchMetrics on page load
-  window.onload = fetchMetrics;
-</script>
-  
+    // Call fetchMetrics on page load
+    window.onload = fetchMetrics;
+  </script>
+
 </body>
 
 </html>
