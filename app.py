@@ -1958,20 +1958,16 @@ def get_ewaste_metrics():
 
         # Calculate total e-waste collected
         total_ewaste_collected = 0
-        batches = db.batches.find()  # Fetch all batches
-        print("Fetched batches:", batches)
-        
+        batches = db.batches.find()  # Fetch all batches        
         for batch in batches:
             items = batch.get("items", [])
             for item_id in items:
                 # Fetch the item's weight from collection_centre
                 item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
-                print("Item Data for", item_id, ":", item_data)
                 if item_data:
                     item = item_data["pick_up_requests"].get(item_id)
                     if item:
                         total_ewaste_collected += float(item.get("weight", 0))
-        print("Total e-waste collected:", total_ewaste_collected)
 
         # Step 1: Initialize a variable to calculate total and compliant batches
         total_batches = 0
@@ -1994,9 +1990,6 @@ def get_ewaste_metrics():
         compliance_rate = 0
         if total_batches > 0:
             compliance_rate = (compliant_batches / total_batches) * 100
-        
-        print(f"Total Batches: {total_batches}, Compliant Batches: {compliant_batches}")
-        print(f"Compliance Rate: {compliance_rate}%")
 
         # E-waste processed in the last 4 months
         current_date = datetime.now()
