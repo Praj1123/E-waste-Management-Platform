@@ -103,6 +103,27 @@ def to_qr_scanner():
 def to_user():
     return render_template("users/home.html")
 
+@app.route("/to_user_profile")
+def to_user_profile():
+    return render_template("users/profile.html")
+
+
+@app.route('/get_profile_details',methods = ['POST'])
+def get_profile_details():
+    try:
+        with open("user_data.txt", "r") as file:
+            file_data = file.read()
+            file_data = json.loads(file_data)
+            user_id = file_data["_id"]["$oid"]
+        result = users_collection.find_one({'_id':ObjectId(user_id)},{'pick_up_requests':0,'_id':0})
+        if result:
+            return jsonify(
+                {"status": "success", "message": "Data found", "data": dumps(result)}
+            )
+        else:
+            return jsonify({"status": "error", "message": "Data not found"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 @app.route("/to_cc")
 def to_cc():

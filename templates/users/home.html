@@ -108,7 +108,7 @@
       </div>
       <div class="col-md-3">
         <img src="/static/images/seeProfile.png" class="hover:saturate-200 img-fluid">
-        <button style="display: block;margin: 0 auto;color: aliceblue;" data-bs-toggle="modal"
+        <button id="profile" style="display: block;margin: 0 auto;color: aliceblue;" data-bs-toggle="modal"
           data-bs-target="#exampleModal1"
           class="btn transition ease-in-out delay-150 bg-green-700 hover:-translate-y-1 hover:scale-110 hover:bg-green-600 duration-300 ...">
           Manage Profile
@@ -508,6 +508,10 @@
         }
       })
 
+    })
+
+    document.getElementById('profile').addEventListener('click', ()=>{
+        window.location.href='/to_user_profile'
     })
 
     document.getElementById('sp_category').addEventListener('change', () => {
