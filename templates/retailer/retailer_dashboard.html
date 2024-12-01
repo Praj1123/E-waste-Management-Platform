@@ -8,9 +8,110 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Custom CSS for the Dashboard */
         body {
-            background-color: #f4f5f7;
             font-family: 'Arial', sans-serif;
+            background-color: #f4f6f9;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+            color: #f8f9fa;
+        }
+
+        .sidebar .nav-item {
+            text-align: center;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .form-container input,
+        .form-container select {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+            border-radius: 8px;
+            padding: 12px 25px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .total-sold {
+            font-size: 40px;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 20px;
+        }
+
+        /* Animation for the sidebar */
+        @keyframes slideIn {
+            0% {
+                transform: translateX(-250px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding-top: 20px;
+            }
+
+
         }
 
         .form-container {
@@ -79,115 +180,194 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="form-container">
-            <h2 class="form-title">Retailer Product Registration Form</h2>
-
-            <form id="productForm"> <!-- Add form ID here -->
-                <!-- User Information Section -->
-                <div class="form-section">
-                    <h3 class="section-title">Customer Information</h3>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="customerName" class="form-label">Customer Name</label>
-                            <input type="text" id="customerName" class="form-control" placeholder="Enter Customer Name">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="contactNumber" class="form-label">Customer Contact</label>
-                            <input type="text" id="contactNumber" class="form-control"
-                                placeholder="Enter Customer Contact">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">Customer Email</label>
-                            <input type="email" id="email" class="form-control" placeholder="Enter Customer Email">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="aadhar" class="form-label">Customer Aadhar No.</label>
-                            <!-- Fixed id mismatch here -->
-                            <input type="text" id="aadhar" class="form-control" placeholder="Customer Aadhar">
+    <div class="text-center">
+        <div class="row">
+            <div class="col-sm-2 border">
+                <div class="sidebar">
+                    <h4 class="mt-2">Retailer Dashboard</h4>
+                    <ul class="nav flex-column text-left" style="text-align: left;">
+                        <li class="nav-item"><a class="nav-link active" href="#"
+                                style="text-align: left;font-weight:bold">ID: <span id="retailer_id">---</span></a></li>
+                        <li class="nav-item"><a class="nav-link " href="#"
+                                style="text-align: left;font-weight:bold">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" style="text-align: left;font-weight:bold">Make
+                                Product Entry</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#"
+                                style="text-align: left;font-weight:bold">Total Sold Products</a></li>
+                        <li class="nav-item"><a class="nav-link text-danger" href="#"
+                                style="text-align: left;font-weight:bold">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm-10 border">
+                <div class="main-content">
+                    <div class="container-fluid">
+                        <!-- Total Products Sold -->
+                        <div class="row mt-4">
+                            <div class="col-md-6 mb-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Total Products Registered</h5>
+                                        <p id="total-products-sold" class="total-sold">0</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div class="container">
+                    <div class="form-container">
+                        <h2 class="form-title">Retailer Product Registration</h2>
 
-                <!-- Product Information Section -->
-                <div class="form-section">
-                    <h3 class="section-title">Product Information</h3>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="product_category" class="form-label">Product Category</label>
-                            <select class="form-select" id="product_category" aria-label="Product category"
-                                onchange="populateBrands();showExpiry()">
-                                <option value="none">Choose</option>
-                                <option value="computers">Computers - Desktop computers, laptops, servers, and
-                                    associated peripherals</option>
-                                <option value="mobile-devices">Mobile Devices - Smartphones, tablets, and accessories
-                                </option>
-                                <option value="consumer-electronics">Consumer Electronics - TVs, DVD players, cameras,
-                                    audio equipment, gaming consoles</option>
-                                <option value="office-equipment">Office Equipment - Printers, scanners, copiers, fax
-                                    machines</option>
-                                <option value="networking-equipment">Networking Equipment - Routers, switches, modems
-                                </option>
-                                <option value="small-appliances">Small Appliances - Microwaves, toasters, blenders
-                                </option>
-                                <option value="batteries">Batteries - Rechargeable batteries</option>
-                                <option value="cables-wires">Cables and Wires - Various cables and wires</option>
-                                <option value="medical-devices">Medical Devices - Medical monitors, infusion pumps
-                                </option>
-                                <option value="gaming-accessories">Gaming Accessories - Controllers, headsets</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="expiry" class="form-label">Average Expiry (Lifespan)</label>
-                            <input type="text" class="form-control" id="expiry"
-                                placeholder="Expiry will be displayed here" readonly>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="brand" class="form-label">Product Brand</label>
-                            <select class="form-select" id="brand" aria-label="Brand">
-                                <option value="none">Choose Brand</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="model" class="form-label">Product Model</label>
-                            <input type="text" id="model" class="form-control" placeholder="Enter Model">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="serialNumber" class="form-label">Serial Number/IMEI</label>
-                            <input type="text" id="serialNumber" class="form-control"
-                                placeholder="Enter Serial Number or IMEI">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="purchaseDate" class="form-label">Purchase Date</label>
-                            <input type="date" id="purchaseDate" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="warranty" class="form-label">Warranty Period</label>
-                            <select id="warranty" class="form-select">
-                                <option selected>Select Warranty Period</option>
-                                <option>1 Year</option>
-                                <option>2 Years</option>
-                                <option>3 Years</option>
-                                <option>Custom</option>
-                            </select>
-                        </div>
+                        <form id="productForm"> <!-- Add form ID here -->
+                            <!-- User Information Section -->
+                            <div class="form-section">
+                                <h3 class="section-title">Customer Information</h3>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="customerName" class="form-label">Customer Name</label>
+                                        <input type="text" id="customerName" class="form-control"
+                                            placeholder="Enter Customer Name">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contactNumber" class="form-label">Customer Contact</label>
+                                        <input type="text" id="contactNumber" class="form-control"
+                                            placeholder="Enter Customer Contact">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Customer Email</label>
+                                        <input type="email" id="email" class="form-control"
+                                            placeholder="Enter Customer Email">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="aadhar" class="form-label">Customer Aadhar No.</label>
+                                        <!-- Fixed id mismatch here -->
+                                        <input type="text" id="aadhar" class="form-control"
+                                            placeholder="Customer Aadhar">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product Information Section -->
+                            <div class="form-section">
+                                <h3 class="section-title">Product Information</h3>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="product_category" class="form-label">Product Category</label>
+                                        <select class="form-select" id="product_category" aria-label="Product category"
+                                            onchange="populateBrands();showExpiry()">
+                                            <option value="none">Choose</option>
+                                            <option value="computers">Computers - Desktop computers, laptops, servers,
+                                                and
+                                                associated peripherals</option>
+                                            <option value="mobile-devices">Mobile Devices - Smartphones, tablets, and
+                                                accessories
+                                            </option>
+                                            <option value="consumer-electronics">Consumer Electronics - TVs, DVD
+                                                players,
+                                                cameras,
+                                                audio equipment, gaming consoles</option>
+                                            <option value="office-equipment">Office Equipment - Printers, scanners,
+                                                copiers,
+                                                fax
+                                                machines</option>
+                                            <option value="networking-equipment">Networking Equipment - Routers,
+                                                switches,
+                                                modems
+                                            </option>
+                                            <option value="small-appliances">Small Appliances - Microwaves, toasters,
+                                                blenders
+                                            </option>
+                                            <option value="batteries">Batteries - Rechargeable batteries</option>
+                                            <option value="cables-wires">Cables and Wires - Various cables and wires
+                                            </option>
+                                            <option value="medical-devices">Medical Devices - Medical monitors, infusion
+                                                pumps
+                                            </option>
+                                            <option value="gaming-accessories">Gaming Accessories - Controllers,
+                                                headsets
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="expiry" class="form-label">Average Expiry (Lifespan)</label>
+                                        <input type="text" class="form-control" id="expiry"
+                                            placeholder="Expiry will be displayed here" readonly>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="brand" class="form-label">Product Brand</label>
+                                        <select class="form-select" id="brand" aria-label="Brand">
+                                            <option value="none">Choose Brand</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="model" class="form-label">Product Model</label>
+                                        <input type="text" id="model" class="form-control" placeholder="Enter Model">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="serialNumber" class="form-label">Serial Number/IMEI</label>
+                                        <input type="text" id="serialNumber" class="form-control"
+                                            placeholder="Enter Serial Number or IMEI">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="purchaseDate" class="form-label">Purchase Date</label>
+                                        <input type="date" id="purchaseDate" class="form-control">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="warranty" class="form-label">Warranty Period</label>
+                                        <select id="warranty" class="form-select">
+                                            <option selected>Select Warranty Period</option>
+                                            <option>1 Year</option>
+                                            <option>2 Years</option>
+                                            <option>3 Years</option>
+                                            <option>Custom</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Section -->
+                            <div class="row mt-4 text-center">
+                                <div class="col-md-12">
+                                    <button type="button" class="btn btn-primary">Submit Form</button>
+                                    <button type="reset" class="btn btn-secondary">Reset Form</button>
+                                </div>
+                            </div>
+                        </form> <!-- End of form -->
+
                     </div>
                 </div>
 
-                <!-- Submit Section -->
-                <div class="row mt-4 text-center">
-                    <div class="col-md-12">
-                        <button type="button" class="btn btn-primary">Submit Form</button>
-                        <button type="reset" class="btn btn-secondary">Reset Form</button>
-                    </div>
-                </div>
-            </form> <!-- End of form -->
+            </div>
+
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="jquery-3.7.1.min.js"></script>
     <script>
+        var id;
+        function check_retailer_session() {
+            console.log('Running');
+            $.ajax({
+                type: "POST",
+                url: "{{url_for('check_retailer_session')}}", // Use the pre-defined URL
+                success: function (response) {
+                    if (response.status === 'success') {
+                        sessionStorage.setItem('retailer_id', response.data)
+                        document.getElementById('retailer_id').innerHTML = response.data;
+                    } else {
+                        console.log(response.message);
+                        alert(response.message);
+                        window.location.href = "/to_retailer";
+                    }
+                },
+                error: function (error) {
+                    console.error('AJAX Error:', error);
+                }
+            });
+        }
+        check_retailer_session()
+
         // Function to show expiry based on selected category
         function showExpiry() {
             var category = document.getElementById("product_category").value;
@@ -274,15 +454,10 @@
                 });
             }
         }
-    </script>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <script>
         // Add an event listener to the submit button to handle the form submission
         document.querySelector(".btn-primary").addEventListener("click", function (event) {
             event.preventDefault();  // Prevent form submission
-    
+
             // Collect form data
             const formData = {
                 customerName: document.getElementById("customerName").value,
@@ -295,14 +470,15 @@
                 model: document.getElementById("model").value,
                 serialNumber: document.getElementById("serialNumber").value,
                 purchaseDate: document.getElementById("purchaseDate").value,
-                warranty: document.getElementById("warranty").value
+                warranty: document.getElementById("warranty").value,
+                retailer_id: sessionStorage.getItem('retailer_id')
             };
-    
+
             // Validation Functions
             const isValidAadhar = (aadhar) => /^\d{12}$/.test(aadhar);  // Aadhar should be exactly 12 digits
             const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);  // Basic email validation
             const isValidContact = (contact) => /^\d{10}$/.test(contact);  // Contact number should be exactly 10 digits
-    
+
             // Check if any field is empty
             for (let key in formData) {
                 if (formData[key] === "") {
@@ -310,23 +486,23 @@
                     return;  // Stop further processing
                 }
             }
-    
+
             // Form validations
             if (!isValidAadhar(formData.aadhar)) {
                 alert("Aadhar card must contain exactly 12 digits.");
                 return;
             }
-    
+
             if (!isValidEmail(formData.email)) {
                 alert("Please enter a valid email address.");
                 return;
             }
-    
+
             if (!isValidContact(formData.contactNumber)) {
                 alert("Contact number must be exactly 10 digits.");
                 return;
             }
-    
+
             // Send AJAX POST request to your server if validation passes
             $.ajax({
                 type: "POST",
@@ -336,7 +512,8 @@
                 success: function (response) {
                     console.log(response);
                     if (response.status === "success") {
-                        alert("Form submitted successfully! Data ID: " + response.data_id);
+                        alert("Form submitted successfully!");
+                        get_product_count()
                     } else {
                         alert("Error: " + response.message);
                     }
@@ -347,11 +524,31 @@
                 }
             });
         });
-    </script>
-    
-    
-    
 
+        function get_product_count() {
+            data = { 'retailer_id': sessionStorage.getItem('retailer_id') }
+            console.log(data)
+            $.ajax({
+                type: 'POST',
+                url: "{{url_for('get_product_count')}}",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                success: function (response) {
+                    if (response.status == "success") {
+                        var data = JSON.parse(response.data);
+                        document.getElementById('total-products-sold').innerHTML = ''
+                        document.getElementById('total-products-sold').innerHTML = data.length
+
+                    } else {
+                        console.log(response.message);
+                    }
+                }
+            })
+        }
+        get_product_count()
+
+
+    </script>
 </body>
 
 </html>

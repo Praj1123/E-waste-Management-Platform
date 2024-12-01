@@ -1,4 +1,13 @@
-from flask import Flask, request, jsonify, render_template, session, redirect, url_for
+from flask import (
+    Flask,
+    request,
+    jsonify,
+    render_template,
+    session,
+    redirect,
+    url_for,
+    session,
+)
 import vonage
 import random
 from pymongo import MongoClient
@@ -111,9 +120,10 @@ def to_user():
 def to_user_profile():
     return render_template("users/profile.html")
 
+
 @app.route("/to_retailer")
 def to_retailer():
-    return render_template("retailer/retailer_dashboard.html")
+    return render_template("retailer/login.html")
 
 
 @app.route("/get_profile_details", methods=["POST"])
@@ -349,6 +359,7 @@ def set_pick_up_data():
     except Exception as e:
         return jsonify({"message": str(e)})
 
+
 @app.route("/to_profile_page")
 def to_profile_page():
     return render_template("users/profile.html")
@@ -436,31 +447,39 @@ def get_pick_up_history():
         with open("user_data.txt", "r") as file:
             data = json.loads(file.read())
             user_data_id = data.get("_id", {}).get("$oid")
-        
+
         # Check if user_data_id exists
         if not user_data_id:
-            return jsonify({"status": "error", "message": "User ID not found in user data."})
+            return jsonify(
+                {"status": "error", "message": "User ID not found in user data."}
+            )
 
         # Fetch the user data from database
         result = users_collection.find_one({"_id": ObjectId(user_data_id)})
 
         # Check if result is empty or None
         if not result:
-            return jsonify({"status": "error", "message": "User not found in database."})
+            return jsonify(
+                {"status": "error", "message": "User not found in database."}
+            )
 
         # Get pick up requests of the user
         pick_up_requests = result.get("pick_up_requests", {})
 
         # Check if pick up requests are empty
         if not pick_up_requests:
-            return jsonify({"status": "error", "message": "No pickup history found for this user."})
+            return jsonify(
+                {"status": "error", "message": "No pickup history found for this user."}
+            )
 
         # Initialize an empty list to store the pickup history
         history_list = []
 
         # Iterate over the user's pickup requests
         for unique_id, cc_id in pick_up_requests.items():
-            data = collection_centre.find_one({"_id": ObjectId(cc_id)}, {f'pick_up_requests.{unique_id}': 1,'_id':0})
+            data = collection_centre.find_one(
+                {"_id": ObjectId(cc_id)}, {f"pick_up_requests.{unique_id}": 1, "_id": 0}
+            )
 
             # Check if data exists for the collection center and if pickup data exists
             if data:
@@ -469,18 +488,17 @@ def get_pick_up_history():
 
         # If no history is found
         if not history_list:
-            return jsonify({"status": "error", "message": "No matching pickup history found."})
+            return jsonify(
+                {"status": "error", "message": "No matching pickup history found."}
+            )
         # Return the pickup history if found
-        return jsonify({
-            "status": "success",
-            "message": "Data Found",
-            "data": dumps(history_list)
-        })
+        return jsonify(
+            {"status": "success", "message": "Data Found", "data": dumps(history_list)}
+        )
 
     except Exception as e:
         # Return error message in case of an exception
         return jsonify({"status": "error", "message": str(e)})
-
 
 
 @app.route("/home")
@@ -591,8 +609,9 @@ def update_user_profile():
             )
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
-    
-@app.route('/signup')
+
+
+@app.route("/signup")
 def signup():
     return render_template("users/otp_sign_up.html")
 
@@ -2262,18 +2281,23 @@ def get_e_waste_weights():
         batches = db.batches.find()
 
         for batch in batches:
-            category = batch.get("product_category", "Unknown").split()[0]  # Shorten name
+            category = batch.get("product_category", "Unknown").split()[
+                0
+            ]  # Shorten name
             category = category_mapping.get(category, category)  # Map to short name
             items = batch.get("items", [])
-            
+
             for item_id in items:
-                item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
+                item_data = db.collection_centre.find_one(
+                    {"pick_up_requests." + item_id: {"$exists": True}}
+                )
                 if item_data:
                     item = item_data["pick_up_requests"].get(item_id)
                     if item:
                         weight = float(item.get("weight", 0))
-                        category_weights[category] = category_weights.get(category, 0) + weight
-
+                        category_weights[category] = (
+                            category_weights.get(category, 0) + weight
+                        )
 
         # Convert to list for JSON response
         data = [{"category": cat, "weight": wt} for cat, wt in category_weights.items()]
@@ -2282,28 +2306,86 @@ def get_e_waste_weights():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
-    
 
     ################################################## Retailer Section ############################################################
 
 
-@app.route('/add_product_retailer', methods=['POST'])
+@app.route("/add_product_retailer", methods=["POST"])
 def add_product_retailer():
     try:
         data = request.get_json()  # Get JSON data sent by the frontend
-        print("Received Data:", data)  # Log the received data
-        
-        # Insert data into MongoDB
-        retailer_collection.insert_one(data)
 
-        return jsonify({
-            "status": "success",
-            "message": "Product added successfully",
-            "data_id": str(data['_id'])  # Return the inserted data ID from MongoDB
-        })
+        result = retailer_collection.insert_one(data)
+        if result.inserted_id:
+            return jsonify(
+                {"status": "success", "message": "Product added successfully"}
+            )
+        else:
+            return jsonify({"status": "error", "message": "Failed to add product"})
     except Exception as e:
         print("Error:", e)
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
+################################ Retaier Section #######################################
+admin = db["Admin"]
+
+
+@app.route("/to_retailer_dashboard")
+def to_retailer_dashboard():
+    return render_template("retailer/retailer_dashboard.html")
+
+
+@app.route("/retainer_login", methods=["POST"])
+def retainer_login():
+    try:
+        data = request.get_json()
+        id = data.get("id")
+        result = admin.find_one(
+            {"_id": ObjectId("674c9304d3e1c3eecb176522"), "Retailer_login": id}
+        )
+        if result:
+            session["retainer_id"] = id
+            return jsonify({"status": "success", "message": "Login Successfully"})
+        else:
+            return jsonify({"status": "error", "message": "Invalid ID"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
+@app.route("/check_retailer_session", methods=["POST"])
+def check_retailer_session():
+    try:
+        if session.get("retainer_id"):
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Session Found",
+                    "data": session.get("retainer_id"),
+                }
+            )
+        else:
+            return jsonify({"status": "error", "message": "Session Expired"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
+@app.route("/get_product_count", methods=["POST"])
+def get_product_count():
+    try:
+        data = request.get_json()
+        id = data["retailer_id"]
+        print(id)
+        result = retailer_collection.find({"retailer_id": id})
+        if result:
+            return jsonify({"status": "success", "data": dumps(result)})
+        else:
+            return jsonify({"status": "error", "message": "No Data Found"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
+################################ Retaier Section #######################################
 
 
 if __name__ == "__main__":
