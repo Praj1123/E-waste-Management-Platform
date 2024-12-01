@@ -111,6 +111,10 @@ def to_user():
 def to_user_profile():
     return render_template("users/profile.html")
 
+@app.route("/to_retailer")
+def to_retailer():
+    return render_template("retailer/retailer_dashboard.html")
+
 
 @app.route("/get_profile_details", methods=["POST"])
 def get_profile_details():
@@ -1024,6 +1028,7 @@ def to_manage_batch_page():
 ################################################################################################################################################################################
 collection_centre = db["collection_centre"]
 pick_up_patners = db["pick-up patners"]
+retailer_collection = db["retailer"]
 
 
 @app.route("/c_sign_in")
@@ -2222,6 +2227,24 @@ def get_e_waste_weights():
 
     ################################################## Retailer Section ############################################################
 
+
+@app.route('/add_product_retailer', methods=['POST'])
+def add_product_retailer():
+    try:
+        data = request.get_json()  # Get JSON data sent by the frontend
+        print("Received Data:", data)  # Log the received data
+        
+        # Insert data into MongoDB
+        retailer_collection.insert_one(data)
+
+        return jsonify({
+            "status": "success",
+            "message": "Product added successfully",
+            "data_id": str(data['_id'])  # Return the inserted data ID from MongoDB
+        })
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 
 if __name__ == "__main__":
