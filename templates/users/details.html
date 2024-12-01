@@ -42,11 +42,55 @@
       margin-right: 5px;
     }
     }
-    
+
+     /* Full-page loader styles */
+     .full-page-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      /* Dark overlay */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .full-page-loader.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .loader {
+      width: 80px;
+      height: 80px;
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
 <body>
+  <div class="full-page-loader" id="fullPageLoader">
+    <div class="loader"></div>
+  </div>
   <nav class="navbar color text-light">
     <div class="container-fluid">
       <a class="navbar-brand text-light"><b>EcoRecycle</b></a>
@@ -208,16 +252,27 @@
     <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
     <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
     <input type="hidden" name="razorpay_signature" id="razorpay_signature">
-</form>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  </form>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
   <script src="jquery-3.7.1.min.js"></script>
   <script src="server.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script>
-    get_cc_data()
+    function showLoader() {
+      const loader = document.getElementById('fullPageLoader');
+      loader.classList.add('active');
+    }
+    showLoader()
+    function hideLoader() {
+      const loader = document.getElementById('fullPageLoader');
+      loader.classList.remove('active');
+    }
+
+    window.onload = get_cc_data()
     function get_cc_data() {
+      showLoader()
       $.ajax({
         type: 'POST',
         url: "{{url_for('get_cc_data')}}",
@@ -229,26 +284,26 @@
             document.getElementById('header').innerHTML = `
             <div class="col-sm-8">
         <h1 class="text-green-700 fs-1" style="text-align: left;"><b>${data['organization_name']}</b></h1>
-        <svg xmlns="http://www.w3.org/2000/svg" class="text-green-600" style="display: inline;" width="26" height="26"
+        <svg xmlns="http://www.w3.org/2000/svg" class="text-green-600" style="display: inline;" width="22" height="22"
           fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
           <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
         </svg>
         <p style="display: inline;">0.3 km from your current location</p>
         <br/>
-        <svg xmlns="http://www.w3.org/2000/svg" class="text-green-600 mt-2" style="display: inline;" width="26" height="26" fill="currentColor" class="bi bi-house-add-fill" viewBox="0 0 16 16">
+        <svg xmlns="http://www.w3.org/2000/svg" class="text-green-600 mt-2" style="display: inline;" width="22" height="22" fill="currentColor" class="bi bi-house-add-fill" viewBox="0 0 16 16">
   <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 1 1-1 0v-1h-1a.5.5 0 1 1 0-1h1v-1a.5.5 0 0 1 1 0"/>
   <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z"/>
   <path d="m8 3.293 4.712 4.712A4.5 4.5 0 0 0 8.758 15H3.5A1.5 1.5 0 0 1 2 13.5V9.293z"/>
 </svg>
-        <p style="display: inline;">${data['address']}</p>
+        <p class='pt-1' style="display: inline;">${data['address']}</p>
         <br/>
-        <svg xmlns="http://www.w3.org/2000/svg" class="text-green-600 mt-2" style="display: inline;" width="26" height="26" fill="currentColor" class="bi bi-alarm-fill" viewBox="0 0 16 16">
+        <svg xmlns="http://www.w3.org/2000/svg" class="text-green-600 mt-2" style="display: inline;" width="22" height="22" fill="currentColor" class="bi bi-alarm-fill" viewBox="0 0 16 16">
   <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5m2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.04 8.04 0 0 0 .86 5.387M11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.04 8.04 0 0 0-3.527-3.527"/>
 </svg>
 <p style="display: inline;">${data['operating_hours']}</p>
 
       </div>
-      <div class="col-sm-4 mt-2" style="float: right;text-align:right"> <img src="${data['profile_url']}" style='text-align: right;max-height:400px'
+      <div class="col-sm-4 mt-2" style="float: right;text-align:right"> <img src="${data['profile_url']}" style='text-align: right;max-width:300px'
     class="img-fluid rounded-tl-lg p-3 border-8 border-r-green-600 border-l-white border-t-white border-r-green-600 border-b-green-600 "
     alt="...">
 </div>
@@ -269,6 +324,9 @@
           alert('We encountered some technical problem')
           console.log(e)
 
+        },
+        complete: function () {
+          hideLoader()
         }
       })
     }
@@ -329,7 +387,7 @@
       let month = currentDate.getMonth() + 1;
       let year = currentDate.getFullYear();
       let formattedDate = day + "/" + month + "/" + year;
-      console.log(formattedDate); 
+      console.log(formattedDate);
       var object = {
         firstName: sessionStorage.getItem('firstName'),
         lastName: sessionStorage.getItem('lastName'),
@@ -349,15 +407,15 @@
         brand: sessionStorage.getItem('brand'),
         charges: sessionStorage.getItem('charges'),
         cc_id: sessionStorage.getItem('cc_id'),
-        request_date :formattedDate,
-        status:'Pending',
+        request_date: formattedDate,
+        status: 'Pending',
         product_image: sessionStorage.getItem('product_image'),
       }
       console.log(object)
       $.ajax({
         type: 'POST',
         url: "{{url_for('set_pick_up_data')}}",
-        data: { 'data': JSON.stringify(object)},
+        data: { 'data': JSON.stringify(object) },
         success: function (response) {
           if (response.status == 'success') {
             alert(response.message)
@@ -380,7 +438,7 @@
     }
 
   </script>
- <!-- <script>
+  <!-- <script>
 
     $(document).ready(function () {
       var settings = {
@@ -468,71 +526,71 @@
     }
   </script>
 -->
-<script>
-  $(document).ready(function(){
-      $('#pay-button').click(function(e){
-          e.preventDefault();
+  <script>
+    $(document).ready(function () {
+      $('#pay-button').click(function (e) {
+        e.preventDefault();
 
-          // Get user input data and store it in session storage
-          var firstName = document.getElementById("firstName").value;
-          var lastName = document.getElementById("lastName").value;
-          var number = document.getElementById("number").value;
-          var address = document.getElementById("address").value;
-          var city = document.getElementById("city").value;
-          var state = document.getElementById("state").value;
-          var zip = document.getElementById("zip").value;
-          
-          sessionStorage.setItem('firstName', firstName);
-          sessionStorage.setItem('lastName', lastName);
-          sessionStorage.setItem('number', number);
-          sessionStorage.setItem('address', address);
-          sessionStorage.setItem('city', city);
-          sessionStorage.setItem('state', state);
-          sessionStorage.setItem('zip', zip);
+        // Get user input data and store it in session storage
+        var firstName = document.getElementById("firstName").value;
+        var lastName = document.getElementById("lastName").value;
+        var number = document.getElementById("number").value;
+        var address = document.getElementById("address").value;
+        var city = document.getElementById("city").value;
+        var state = document.getElementById("state").value;
+        var zip = document.getElementById("zip").value;
 
-          // Fetch total charges from sessionStorage
-          var totalCharges = sessionStorage.getItem('total_charges');
-          if (!totalCharges) {
-              alert('Total charges not set');
-              return;
-          }
+        sessionStorage.setItem('firstName', firstName);
+        sessionStorage.setItem('lastName', lastName);
+        sessionStorage.setItem('number', number);
+        sessionStorage.setItem('address', address);
+        sessionStorage.setItem('city', city);
+        sessionStorage.setItem('state', state);
+        sessionStorage.setItem('zip', zip);
 
-          // Create a new order from the Flask backend
-          $.post('/create_order', { "amount": totalCharges * 100 }, function(order) {
-              var options = {
-                  "key": "rzp_test_l57LNe7mJd4jWC", // Razorpay API Key
-                  "amount": order.amount, // Amount in paise
-                  "currency": "INR",
-                  "name": "Your Company Name",
-                  "description": "Purchase Description",
-                  "image": "https://yourlogo.com/logo.png",
-                  "order_id": order.id, // Order ID from backend
-                  "handler": function (response){
-                    set_pick_up_data()
-                    alert('Payment Successful')
-                  },
-                  "prefill": {
-                      "name": firstName + " " + lastName,
-                      "email": "customer@example.com", // Replace with actual email
-                  },
-                  "theme": {
-                      "color": "#2d9c4e"
-                  }
-              };
+        // Fetch total charges from sessionStorage
+        var totalCharges = sessionStorage.getItem('total_charges');
+        if (!totalCharges) {
+          alert('Total charges not set');
+          return;
+        }
 
-              // Initialize Razorpay payment form
-              var rzp = new Razorpay(options);
-              rzp.on('payment.failed', function (response) {
-                  alert('Payment failed: ' + response.error.description);
-              });
-              rzp.open();
-          })
-          .fail(function(error) {
-              alert('Error creating order: ' + error.responseText);
+        // Create a new order from the Flask backend
+        $.post('/create_order', { "amount": totalCharges * 100 }, function (order) {
+          var options = {
+            "key": "rzp_test_l57LNe7mJd4jWC", // Razorpay API Key
+            "amount": order.amount, // Amount in paise
+            "currency": "INR",
+            "name": "Your Company Name",
+            "description": "Purchase Description",
+            "image": "https://yourlogo.com/logo.png",
+            "order_id": order.id, // Order ID from backend
+            "handler": function (response) {
+              set_pick_up_data()
+              alert('Payment Successful')
+            },
+            "prefill": {
+              "name": firstName + " " + lastName,
+              "email": "customer@example.com", // Replace with actual email
+            },
+            "theme": {
+              "color": "#2d9c4e"
+            }
+          };
+
+          // Initialize Razorpay payment form
+          var rzp = new Razorpay(options);
+          rzp.on('payment.failed', function (response) {
+            alert('Payment failed: ' + response.error.description);
+          });
+          rzp.open();
+        })
+          .fail(function (error) {
+            alert('Error creating order: ' + error.responseText);
           });
       });
-  });
-</script>
+    });
+  </script>
 
 
 </body>

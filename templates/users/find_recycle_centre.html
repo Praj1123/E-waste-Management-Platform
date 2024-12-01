@@ -22,10 +22,55 @@
         height: 250px;
       }
     }
+     /* Full-page loader styles */
+     .full-page-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      /* Dark overlay */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .full-page-loader.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .loader {
+      width: 80px;
+      height: 80px;
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
 <body>
+  <div class="full-page-loader" id="fullPageLoader">
+    <div class="loader"></div>
+  </div>
+
   <nav class="navbar color text-light">
     <div class="container-fluid">
       <a class="navbar-brand text-light"><b>EcoRecycle</b></a>
@@ -96,23 +141,35 @@
   <script src="jquery-3.7.1.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    function showLoader() {
+      const loader = document.getElementById('fullPageLoader');
+      loader.classList.add('active');
+    }
+    showLoader()
+    function hideLoader() {
+      const loader = document.getElementById('fullPageLoader');
+      loader.classList.remove('active');
+    }
+
+    window.onload = function () {
       get_filtered_recycle_center()
-      function get_filtered_recycle_center() {
-        $.ajax({
-          type: 'POST',
-          url: "{{url_for('get_filtered_recycle_centre')}}",
-          data: { 'brand': sessionStorage.getItem('brand') },
-          success: function (response) {
-            if (response.status == 'success') {
-              var data = response.data
-              data = JSON.parse(response.data)
-              document.getElementById('out_1').innerHTML = data.length
-              count = 0
-              for (var i = 0; i < data.length; i++) {
-                data = data[i]
-                console.log(data)
-                document.getElementById('fetch_cards').innerHTML += `
+    };
+    function get_filtered_recycle_center() {
+      showLoader()
+      $.ajax({
+        type: 'POST',
+        url: "{{url_for('get_filtered_recycle_centre')}}",
+        data: { 'brand': sessionStorage.getItem('brand') },
+        success: function (response) {
+          if (response.status == 'success') {
+            var data = response.data
+            data = JSON.parse(response.data)
+            document.getElementById('out_1').innerHTML = data.length
+            count = 0
+            for (var i = 0; i < data.length; i++) {
+              data = data[i]
+              console.log(data)
+              document.getElementById('fetch_cards').innerHTML += `
               <div class="col-md-8">
                   <div class="card mb-3" style="max-width: 540px;">
                     <div class="row g-0">
@@ -126,36 +183,41 @@
                           <p class="fst-italic fs-6 text-success">0.3 from your current location</p>
                           <p class='fw-normal'><b>Operating Hours:</b> ${data['operating_hours']}</p>
                           <button class="btn btn-outline-success mb-2" style="float: right;" onclick="sessionStorage.setItem('cc_id','${data['_id']['$oid']}');window.location.href = '/to_details_page'">Visit</button>
+                          <button class="btn btn-outline-success mb-2" style="float: right;margin-right:10px"> View on Map</button>
+
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               `
-                count = count + 1
-                document.getElementById('out_2').innerHTML = count
-              }
-            } else {
-              if (response.status == 'error') {
-                document.getElementById('alert_text').style.display = 'block'
-                console.log(response.message)
-              } else {
-                document.getElementById('alert_text').innerHTML = 'Something went wrong'
-                alert('Something went wrong')
-              }
+              count = count + 1
+              document.getElementById('out_2').innerHTML = count
             }
-
-          },
-          error: function (error) {
-            console.log(error)
-            document.getElementById('alert_text').innerHTML = 'We encounter some technical issue'
-            alert('We encounter some technical issue')
-
+          } else {
+            if (response.status == 'error') {
+              document.getElementById('alert_text').style.display = 'block'
+              console.log(response.message)
+            } else {
+              document.getElementById('alert_text').innerHTML = 'Something went wrong'
+              alert('Something went wrong')
+            }
           }
-        })
 
-      }
-    })
+        },
+        error: function (error) {
+          hideLoader()
+          console.log(error)
+          document.getElementById('alert_text').innerHTML = 'We encounter some technical issue'
+          alert('We encounter some technical issue')
+
+        },
+        complete: function () {
+          hideLoader()
+        }
+      })
+
+    }
   </script>
 </body>
 
