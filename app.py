@@ -103,6 +103,27 @@ def to_qr_scanner():
 def to_user():
     return render_template("users/home.html")
 
+@app.route("/to_user_profile")
+def to_user_profile():
+    return render_template("users/profile.html")
+
+
+@app.route('/get_profile_details',methods = ['POST'])
+def get_profile_details():
+    try:
+        with open("user_data.txt", "r") as file:
+            file_data = file.read()
+            file_data = json.loads(file_data)
+            user_id = file_data["_id"]["$oid"]
+        result = users_collection.find_one({'_id':ObjectId(user_id)},{'pick_up_requests':0,'_id':0})
+        if result:
+            return jsonify(
+                {"status": "success", "message": "Data found", "data": dumps(result)}
+            )
+        else:
+            return jsonify({"status": "error", "message": "Data not found"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 @app.route("/to_cc")
 def to_cc():
@@ -1958,20 +1979,16 @@ def get_ewaste_metrics():
 
         # Calculate total e-waste collected
         total_ewaste_collected = 0
-        batches = db.batches.find()  # Fetch all batches
-        print("Fetched batches:", batches)
-        
+        batches = db.batches.find()  # Fetch all batches        
         for batch in batches:
             items = batch.get("items", [])
             for item_id in items:
                 # Fetch the item's weight from collection_centre
                 item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
-                print("Item Data for", item_id, ":", item_data)
                 if item_data:
                     item = item_data["pick_up_requests"].get(item_id)
                     if item:
                         total_ewaste_collected += float(item.get("weight", 0))
-        print("Total e-waste collected:", total_ewaste_collected)
 
         # Step 1: Initialize a variable to calculate total and compliant batches
         total_batches = 0
@@ -1994,9 +2011,6 @@ def get_ewaste_metrics():
         compliance_rate = 0
         if total_batches > 0:
             compliance_rate = (compliant_batches / total_batches) * 100
-        
-        print(f"Total Batches: {total_batches}, Compliant Batches: {compliant_batches}")
-        print(f"Compliance Rate: {compliance_rate}%")
 
         # E-waste processed in the last 4 months
         current_date = datetime.now()
@@ -2055,12 +2069,19 @@ def get_top_categories():
     ]
     top_categories = list(db.batches.aggregate(pipeline))
 
-    # Prepare data for the frontend
+    # Split the category name into two parts: First word and rest of the words
     response = {
+
         "categories": [item["_id"] for item in top_categories] ,
+
+        "categories": [
+            ' '.join(item["_id"].split(' ', 1)[:1]) for item in top_categories
+        ],  # Get only the first two words from category name
+
         "counts": [item["count"] for item in top_categories]
     }
     return jsonify(response)
+
 
 @app.route('/get_e_waste_weights', methods=['GET'])
 def get_e_waste_weights():
