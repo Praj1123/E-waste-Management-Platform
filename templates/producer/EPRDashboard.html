@@ -421,11 +421,11 @@
           <p class="chart-title">E-Waste Category Distribution</p>
           <canvas id="pieChart-1" width="400" height="400"></canvas>
         </div>
-        <div class="charts-card">
+        <!-- <div class="charts-card">
           <p class="chart-title">E-Waste Processing Breakdown</p>
           <canvas id="pieChart"></canvas>
           <div id="area-chart"></div>
-        </div>
+        </div> -->
       </div>
   </div>
   </main>
@@ -448,49 +448,13 @@
       });
     }
 
-    // Initialize charts
-    const initCharts = () => {
-      // Bar Chart
-      new Chart(document.getElementById("barChart"), {
-        type: "bar",
-        data: {
-          labels: ["Center 1", "Center 2", "Center 3", "Center 4"],
-          datasets: [{
-            label: "E-Waste Collected (tons)",
-            data: [150, 200, 175, 225],
-            backgroundColor: ["#00796B", "#43A047", "#7CB342", "#AED581"],
-          }],
-        },
-      });
-
-      // Pie Chart
-      new Chart(document.getElementById("pieChart"), {
-        type: "pie",
-        data: {
-          labels: ["Recycled", "Disposed", "Resold"],
-          datasets: [{
-            data: [60, 25, 15],
-            backgroundColor: ["#00796B", "#FF8F00", "#D32F2F"],
-          }],
-        },
-      });
-    };
-
-    // Run the function to initialize charts on page load
-    window.onload = initCharts;
   </script>
 
-
-  <!-- Scripts -->
-  <!-- Include ApexCharts library -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> -->
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
 
   <script>
-
     // BAR CHART: Top E-Waste Categories
-
     // Function to fetch data and render the chart dynamically
     async function fetchTopCategories(producerId) {
       try {
@@ -566,8 +530,6 @@
     fetchTopCategories("662f447c17b38db02618b53d");
 
 
-
-
     // AREA CHART: E-Waste Collection Trend
     var areaChartOptions = {
       series: [{
@@ -589,16 +551,7 @@
 
     var areaChart = new ApexCharts(document.querySelector("#area-chart"), areaChartOptions);
     areaChart.render();
-  </script>
 
-
-  <div class="charts-card">
-    <p class="chart-title">E-Waste Category Distribution</p>
-    <canvas id="pieChart-1" width="400" height="400"></canvas>
-  </div>
-
-  <script>
-    // Fetch and update the metrics dynamically
     document.addEventListener('DOMContentLoaded', function () {
       fetch('/get_e_waste_weights')
         .then(response => response.json())
@@ -622,7 +575,7 @@
                 labels: categories, // Categories as labels
                 datasets: [{
                   data: weights, // Weights as data
-                  backgroundColor: ["#00796B", "#FF8F00", "#D32F2F"], // Colors for each segment
+                  backgroundColor: ["#00796B", "#FF8F00", "#D32F2F", "#fff000"], // Colors for each segment
                 }],
               },
               options: {
@@ -651,9 +604,6 @@
         })
         .catch(err => console.error("Error fetching data:", err));
     });
-  </script>
-
-  <script>
     // Fetch and update the metrics dynamically
     async function fetchMetrics() {
       try {

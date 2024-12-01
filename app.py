@@ -2057,7 +2057,7 @@ def get_top_categories():
 
     # Prepare data for the frontend
     response = {
-        "categories": [item["_id"] for item in top_categories],
+        "categories": [item["_id"] for item in top_categories] ,
         "counts": [item["count"] for item in top_categories]
     }
     return jsonify(response)
@@ -2079,17 +2079,22 @@ def get_e_waste_weights():
         batches = db.batches.find()
 
         for batch in batches:
-            category = batch.get("product_category", "Unknown").split()[0]  # Shorten name
-            category = category_mapping.get(category, category)  # Map to short name
-            items = batch.get("items", [])
-            
-            for item_id in items:
-                item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
-                if item_data:
-                    item = item_data["pick_up_requests"].get(item_id)
-                    if item:
-                        weight = float(item.get("weight", 0))
-                        category_weights[category] = category_weights.get(category, 0) + weight
+                category = batch.get("product_category", "Unknown").split()[0]  
+                category = category_mapping.get(category, category)
+                print(f"Processing category: {category}")  # Debug log
+
+                items = batch.get("items", [])
+                for item_id in items:
+                    print(f"Looking for item_id: {item_id}")  # Debug log
+                    item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
+                    if item_data:
+                        print(f"Item found: {item_data}")  # Debug log
+                        item = item_data["pick_up_requests"].get(item_id)
+                        if item:
+                            weight = float(item.get("weight", 0))
+                            print(f"Adding weight {weight} for category {category}")  # Debug log
+                            category_weights[category] = category_weights.get(category, 0) + weight
+
 
         # Convert to list for JSON response
         data = [{"category": cat, "weight": wt} for cat, wt in category_weights.items()]
