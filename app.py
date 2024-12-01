@@ -2094,16 +2094,32 @@ def pp_confirm_pick_up():
 @app.route("/get_ewaste_metrics", methods=["GET"])
 def get_ewaste_metrics():
     try:
-        # Logging the start of the endpoint
         print("Starting /get_ewaste_metrics endpoint...")
 
-        # Calculate total e-waste collected
+        # Initialize metrics
         total_ewaste_collected = 0
-        batches = db.batches.find()  # Fetch all batches
+        total_batches = 0
+        compliant_batches = 0
+
+        epr_products = [
+            "computer (Desktop computers, laptops, servers, and associated peripherals)",
+            "mobile-devices (Smartphones, tablets, and accessories such as chargers and cables)",
+            "consumer-electronics (Televisions, DVD players, cameras, gaming consoles)",
+            "office-equipment (Printers, scanners, photocopiers, fax machines)",
+            "networking-equipment (Routers, switches, modems)",
+            "small-appliances (Microwaves, toasters, blenders)",
+            "batteries (Rechargeable batteries)",
+            "cables-wires (Various cables and wires)",
+            "medical-devices (Medical monitors, infusion pumps)",
+            "gaming-accessories (Controllers, headsets)"
+        ]
+
+
+        # Calculate total e-waste collected
+        batches = db.batches.find()
         for batch in batches:
             items = batch.get("items", [])
             for item_id in items:
-                # Fetch the item's weight from collection_centre
                 item_data = db.collection_centre.find_one(
                     {"pick_up_requests." + item_id: {"$exists": True}}
                 )
@@ -2112,102 +2128,143 @@ def get_ewaste_metrics():
                     if item:
                         total_ewaste_collected += float(item.get("weight", 0))
 
-        # Step 1: Initialize a variable to calculate total and compliant batches
-        total_batches = 0
-        compliant_batches = 0
-
-        # Step 2: Get all batches, then calculate compliance based on `compliance_status`
-        batches = db.batches.find()  # Fetch all batches
-        for batch in batches:
-            # Check the producer_id for the batch
+        # Calculate compliance rate
+        for batch in db.batches.find():
             producer_id = batch.get("producer_id")
             if producer_id:
-                # Increment total batches
                 total_batches += 1
-                # Check if the batch is compliant
-                compliance_status = batch.get("compliance_status")
-                if compliance_status == "compliant":
+                if batch.get("compliance_status") == "compliant":
                     compliant_batches += 1
 
-        # Step 3: Calculate the compliance rate
         compliance_rate = 0
         if total_batches > 0:
             compliance_rate = (compliant_batches / total_batches) * 100
 
-        # E-waste processed in the last 4 months
-        current_date = datetime.now()
-        print(current_date)
-
-        # Calculate the date for 4 months ago (rough estimate, assuming 30 days per month)
+        # Calculate e-waste processed in the last 4 months
+        current_date = datetime.now().date()
         four_months_ago = current_date - timedelta(days=4 * 30)
 
-        # Initialize the processed e-waste total
+        recent_batches = db.batches.find({
+            "date": {"$gte": four_months_ago.isoformat(), "$lte": current_date.isoformat()}
+        })
+
         ewaste_processed_last_4_months = 0
+        for batch in recent_batches:
+            items = batch.get("items", [])
+            for item_id in items:
+                item_data = db.collection_centre.find_one(
+                    {"pick_up_requests." + item_id: {"$exists": True}}
+                )
+                if item_data:
+                    item = item_data["pick_up_requests"].get(item_id)
+                    if item:
+                        ewaste_processed_last_4_months += float(item.get("weight", 0))
 
-        # Query for batches processed in the last 4 months, ensuring that 'processed_weight' exists
-        processed_batches = db.batches.find(
-            {
-                "date": {"$gte": four_months_ago, "$lt": current_date},
-                "processed_weight": {
-                    "$exists": True
-                },  # Ensure the processed_weight field exists
-            }
-        )
-
-        # Sum up the weights for the previous 4 months
-        for batch in processed_batches:
-            # Add the processed_weight to the total for this batch
-            ewaste_processed_last_4_months += float(batch.get("processed_weight", 0))
-
-        # Print the result
-        print("E-waste processed in the last 4 months:", ewaste_processed_last_4_months)
-
-        # Return metrics as JSON response
-        return jsonify(
-            {
-                "status": "success",
-                "total_ewaste": total_ewaste_collected,
-                "compliance_rate": round(compliance_rate, 2),
-                "processed_this_month": ewaste_processed_last_4_months,
-            }
-        )
+        # Return JSON response
+        return jsonify({
+            "status": "success",
+            "total_ewaste": total_ewaste_collected,
+            "compliance_rate": round(compliance_rate, 2),
+            "processed_this_month": ewaste_processed_last_4_months,
+            "products_under_epr": len(epr_products)
+        })
 
     except Exception as e:
         print("Error in /get_ewaste_metrics:", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
-
+    
+    
 
 # Get the top 5 e waste metrics
-@app.route("/get_top_categories", methods=["GET"])
+@app.route('/get_top_categories', methods=['GET'])
 def get_top_categories():
-    # Get the producer_id from query parameters
-    producer_id = request.args.get("producer_id", None)
-    if not producer_id:
-        return jsonify({"error": "producer_id is required"}), 400
+    try:
+        # Get the producer_id from query parameters
+        producer_id = request.args.get('producer_id', None)
+        if not producer_id:
+            return jsonify({"error": "producer_id is required"}), 400
 
-    # Query MongoDB to count items per category for the specified producer
-    pipeline = [
-        {"$match": {"producer_id": producer_id}},  # Filter by producer_id
-        {
-            "$group": {
+        # MongoDB aggregation pipeline
+        pipeline = [
+            {"$match": {"producer_id": producer_id}},  # Filter by producer_id
+            {"$group": {
                 "_id": "$product_category",
-                "count": {"$sum": 1},  # Count occurrences of each category
-            }
-        },
-        {"$sort": {"count": -1}},  # Sort by count in descending order
-        {"$limit": 5},  # Get the top 5 categories
-    ]
-    top_categories = list(db.batches.aggregate(pipeline))
+                "count": {"$sum": 1}  # Count occurrences of each category
+            }},
+            {"$sort": {"count": -1}},  # Sort by count in descending order
+            {"$limit": 5}  # Get the top 5 categories
+        ]
+        top_categories = list(db.batches.aggregate(pipeline))
 
-    # Split the category name into two parts: First word and rest of the words
-    response = {
-        "categories": [item["_id"] for item in top_categories],
-        "counts": [item["count"] for item in top_categories],
+        # Prepare response
+        response = {
+        "categories": [
+            ' '.join(item["_id"].split(' ', 2)[:1]) for item in top_categories
+        ],  # Get only the first two words from category name
+        "counts": [item["count"] for item in top_categories]
     }
-    return jsonify(response)
+
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/get_ewaste_trend", methods=["GET"])
+def get_ewaste_trend():
+    try:
+        # Logging the start of the endpoint
+        print("Starting /get_ewaste_trend endpoint...")
+
+        # Initialize a dictionary to store monthly data
+        monthly_data = {}
+
+        # Query all batches
+        batches = db.batches.find()
+
+        for batch in batches:
+            # Parse the date field
+            batch_date = batch.get("date")
+            if batch_date:
+                # Convert to datetime object
+                date_obj = datetime.strptime(batch_date, "%Y-%m-%d")
+                # Extract the month and year
+                month_year = date_obj.strftime("%b %Y")  # Format: "Jan 2024"
+
+                # Initialize the month's total weight if not present
+                if month_year not in monthly_data:
+                    monthly_data[month_year] = 0
+
+                # Sum up the weights for this month
+                items = batch.get("items", [])
+                for item_id in items:
+                    item_data = db.collection_centre.find_one(
+                        {"pick_up_requests." + item_id: {"$exists": True}}
+                    )
+                    if item_data:
+                        item = item_data["pick_up_requests"].get(item_id)
+                        if item:
+                            monthly_data[month_year] += float(item.get("weight", 0))
+
+        # Sort the data by month and prepare for response
+        sorted_months = sorted(
+            monthly_data.items(),
+            key=lambda x: datetime.strptime(x[0], "%b %Y")
+        )
+
+        response = {
+            "months": [month for month, _ in sorted_months],
+            "weights": [weight for _, weight in sorted_months]
+        }
+
+        return jsonify({"status": "success", "data": response})
+
+    except Exception as e:
+        print("Error in /get_ewaste_trend:", str(e))
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@app.route("/get_e_waste_weights", methods=["GET"])
+@app.route('/get_e_waste_weights', methods=['GET'])
 def get_e_waste_weights():
     try:
         # Map to shorten category names
