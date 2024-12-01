@@ -2085,6 +2085,7 @@ def get_ewaste_metrics():
 
         # E-waste processed in the last 4 months
         current_date = datetime.now()
+        print(current_date)
 
         # Calculate the date for 4 months ago (rough estimate, assuming 30 days per month)
         four_months_ago = current_date - timedelta(days=4 * 30)
