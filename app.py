@@ -345,7 +345,6 @@ def set_pick_up_data():
     except Exception as e:
         return jsonify({"message": str(e)})
 
-
 @app.route("/to_profile_page")
 def to_profile_page():
     return render_template("users/profile.html")
