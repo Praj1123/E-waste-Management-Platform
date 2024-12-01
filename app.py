@@ -2048,12 +2048,15 @@ def get_top_categories():
     ]
     top_categories = list(db.batches.aggregate(pipeline))
 
-    # Prepare data for the frontend
+    # Split the category name into two parts: First word and rest of the words
     response = {
-        "categories": [item["_id"] for item in top_categories],
+        "categories": [
+            ' '.join(item["_id"].split(' ', 1)[:1]) for item in top_categories
+        ],  # Get only the first two words from category name
         "counts": [item["count"] for item in top_categories]
     }
     return jsonify(response)
+
 
 @app.route('/get_e_waste_weights', methods=['GET'])
 def get_e_waste_weights():
