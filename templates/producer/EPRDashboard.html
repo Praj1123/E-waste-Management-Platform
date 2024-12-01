@@ -383,12 +383,7 @@
           </div>
           <span class="text-primary font-weight-bold" id="total-ewaste">Loading...</span>
         </div>
-        <div class="card">
-          <div class="card-inner">
-            <p class="text-primary">Compliance Rate</p>
-          </div>
-          <span class="text-primary font-weight-bold" id="compliance-rate">Loading...</span>
-        </div>
+        
         <div class="card">
           <div class="card-inner">
             <p class="text-primary">Products Under EPR</p>
@@ -397,10 +392,19 @@
         </div>
         <div class="card">
           <div class="card-inner">
-            <p class="text-primary">E-Waste Processed This Month</p>
+            <p class="text-primary">E-Waste Collected Quarterly (Last 4 Months)</p>
+            <br>
+            <p class="text-muted" id="current-date">Loading date...</p>
           </div>
           <span class="text-primary font-weight-bold" id="processed-ewaste">Loading...</span>
         </div>
+        <div class="card">
+          <div class="card-inner">
+            <p class="text-primary">Compliance Rate</p>
+          </div>
+          <span class="text-primary font-weight-bold" id="compliance-rate">Loading...</span>
+        </div>
+
       </div>
 
       <!-- Charts Section with Relevant Data -->
@@ -454,6 +458,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
 
   <script>
+
+    function displayCurrentDate() {
+      const currentDate = new Date();
+      const options = { year: 'numeric', month: 'short', day: '2-digit' };
+      const formattedDate = `Date: ${currentDate.toLocaleDateString('en-US', options)}`;
+
+      // Update the placeholder in the card
+      document.getElementById("current-date").textContent = formattedDate;
+    }
+
+    // Call the function on page load
+    document.addEventListener("DOMContentLoaded", displayCurrentDate);
     // BAR CHART: Top E-Waste Categories
     // Function to fetch data and render the chart dynamically
     async function fetchTopCategories(producerId) {
@@ -529,26 +545,41 @@
 
 
     // AREA CHART: E-Waste Collection Trend
-    var areaChartOptions = {
-      series: [{
-        name: 'E-Waste Collected',
-        data: [20, 35, 30, 50, 70, 90, 120] // Sample data for collection trend
-      }],
-      chart: {
-        height: 350,
-        type: 'area',
-        toolbar: { show: false },
-      },
-      colors: ["#4f35a1"],
-      dataLabels: { enabled: false },
-      stroke: { curve: 'smooth' },
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-      yaxis: { title: { text: 'Collected (kg)' } },
-      tooltip: { shared: true, intersect: false }
-    };
+    document.addEventListener("DOMContentLoaded", function () {
+  fetch("/get_ewaste_trend")
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === "success") {
+        const months = data.data.months; // Extract months
+        const weights = data.data.weights; // Extract weights
 
-    var areaChart = new ApexCharts(document.querySelector("#area-chart"), areaChartOptions);
-    areaChart.render();
+        // Update chart options with dynamic data
+        var areaChartOptions = {
+          series: [{
+            name: 'E-Waste Collected',
+            data: weights // Use dynamic weights
+          }],
+          chart: {
+            height: 350,
+            type: 'area',
+            toolbar: { show: false },
+          },
+          colors: ["#4f35a1"],
+          dataLabels: { enabled: false },
+          stroke: { curve: 'smooth' },
+          labels: months, // Use dynamic months
+          yaxis: { title: { text: 'Collected (kg)' } },
+          tooltip: { shared: true, intersect: false }
+        };
+
+        var areaChart = new ApexCharts(document.querySelector("#area-chart"), areaChartOptions);
+        areaChart.render();
+      } else {
+        console.error("Failed to fetch data:", data.message);
+      }
+    })
+    .catch(error => console.error("Error fetching trend data:", error));
+});
 
     document.addEventListener('DOMContentLoaded', function () {
       fetch('/get_e_waste_weights')
@@ -617,7 +648,7 @@
         if (data.status === 'success') {
           document.getElementById('total-ewaste').textContent = data.total_ewaste + ' kg';
           document.getElementById('compliance-rate').textContent = data.compliance_rate + '%';
-          document.getElementById('products-epr').textContent = data.products_under_epr;
+          document.getElementById('products-epr').textContent = data.products_under_epr + '/135';
           document.getElementById('processed-ewaste').textContent = data.processed_this_month + ' kg';
         } else {
           console.error('Failed to fetch metrics:', data.message);
