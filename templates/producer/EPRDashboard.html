@@ -421,11 +421,11 @@
           <p class="chart-title">E-Waste Category Distribution</p>
           <canvas id="pieChart-1" width="400" height="400"></canvas>
         </div>
-        <div class="charts-card">
+        <!-- <div class="charts-card">
           <p class="chart-title">E-Waste Processing Breakdown</p>
           <canvas id="pieChart"></canvas>
           <div id="area-chart"></div>
-        </div>
+        </div> -->
       </div>
   </div>
   </main>
@@ -448,49 +448,13 @@
       });
     }
 
-    // Initialize charts
-    const initCharts = () => {
-      // Bar Chart
-      new Chart(document.getElementById("barChart"), {
-        type: "bar",
-        data: {
-          labels: ["Center 1", "Center 2", "Center 3", "Center 4"],
-          datasets: [{
-            label: "E-Waste Collected (tons)",
-            data: [150, 200, 175, 225],
-            backgroundColor: ["#00796B", "#43A047", "#7CB342", "#AED581"],
-          }],
-        },
-      });
-
-      // Pie Chart
-      new Chart(document.getElementById("pieChart"), {
-        type: "pie",
-        data: {
-          labels: ["Recycled", "Disposed", "Resold"],
-          datasets: [{
-            data: [60, 25, 15],
-            backgroundColor: ["#00796B", "#FF8F00", "#D32F2F"],
-          }],
-        },
-      });
-    };
-
-    // Run the function to initialize charts on page load
-    window.onload = initCharts;
   </script>
 
-
-  <!-- Scripts -->
-  <!-- Include ApexCharts library -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> -->
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
 
   <script>
-
     // BAR CHART: Top E-Waste Categories
-
     // Function to fetch data and render the chart dynamically
     async function fetchTopCategories(producerId) {
       try {
@@ -505,13 +469,8 @@
         }
 
         // Extract categories and counts from the response
-        const fullCategories = data.categories; // Full category names
+        const fullCategories = data.categories; // Full category names (already sliced in backend)
         const counts = data.counts; // Counts for each category
-
-        // Shorten category names for the x-axis
-        const shortenedCategories = fullCategories.map(category =>
-          category.split(' ').slice(0, 2).join(' ') // First two words
-        );
 
         // Define bar chart options with dynamic data
         var barChartOptions = {
@@ -535,10 +494,10 @@
           dataLabels: { enabled: false }, // Disable labels on bars
           legend: { show: false },        // Disable legend
           xaxis: {
-            categories: shortenedCategories // Shortened category names on x-axis
+            categories: fullCategories // Directly use categories received from backend
           },
           yaxis: {
-            title: { text: "Quantity" } // Label for y-axis
+            title: { text: "Item Count" } // Updated label for Y-axis
           },
           tooltip: {
             custom: function ({ series, seriesIndex, dataPointIndex, w }) {
@@ -546,9 +505,9 @@
               const fullCategory = fullCategories[dataPointIndex]; // Get full name
               const count = series[0][dataPointIndex]; // Get count
               return `<div class="tooltip-box">
-                      <strong>Category:</strong> ${fullCategory}<br>
-                      <strong>Collected:</strong> ${count}
-                    </div>`;
+                            <strong>Category:</strong> ${fullCategory}<br>
+                            <strong>Collected:</strong> ${count}
+                          </div>`;
             }
           }
         };
@@ -562,10 +521,11 @@
       }
     }
 
+
+
+
     // Fetch and render data for a specific producer
     fetchTopCategories("662f447c17b38db02618b53d");
-
-
 
 
     // AREA CHART: E-Waste Collection Trend
@@ -589,16 +549,7 @@
 
     var areaChart = new ApexCharts(document.querySelector("#area-chart"), areaChartOptions);
     areaChart.render();
-  </script>
 
-
-  <div class="charts-card">
-    <p class="chart-title">E-Waste Category Distribution</p>
-    <canvas id="pieChart-1" width="400" height="400"></canvas>
-  </div>
-
-  <script>
-    // Fetch and update the metrics dynamically
     document.addEventListener('DOMContentLoaded', function () {
       fetch('/get_e_waste_weights')
         .then(response => response.json())
@@ -622,7 +573,7 @@
                 labels: categories, // Categories as labels
                 datasets: [{
                   data: weights, // Weights as data
-                  backgroundColor: ["#00796B", "#FF8F00", "#D32F2F"], // Colors for each segment
+                  backgroundColor: ["#00796B", "#FF8F00", "#D32F2F", "#fff000"], // Colors for each segment
                 }],
               },
               options: {
@@ -635,10 +586,10 @@
                     },
                   },
                   tooltip: {
-                    enabled: true, // Tooltip enabled on hover
-                    y: {
-                      formatter: function (val) {
-                        return `${val} kg`; // Format the tooltip to show kg
+                    callbacks: {
+                      label: function (context) {
+                        const value = context.raw; // Get the raw value
+                        return `${value} kg`; // Format the label to include "kg"
                       },
                     },
                   },
@@ -651,9 +602,6 @@
         })
         .catch(err => console.error("Error fetching data:", err));
     });
-  </script>
-
-  <script>
     // Fetch and update the metrics dynamically
     async function fetchMetrics() {
       try {
@@ -679,7 +627,6 @@
       }
     }
 
-    // Call fetchMetrics on page load
     window.onload = fetchMetrics;
   </script>
 

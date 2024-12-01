@@ -2143,15 +2143,14 @@ def get_top_categories():
     ]
     top_categories = list(db.batches.aggregate(pipeline))
 
-    # Prepare data for the frontend
+    # Split the category name into two parts: First word and rest of the words
     response = {
         "categories": [item["_id"] for item in top_categories],
-        "counts": [item["count"] for item in top_categories],
+        "counts": [item["count"] for item in top_categories]
     }
     return jsonify(response)
 
-
-@app.route("/get_e_waste_weights", methods=["GET"])
+@app.route('/get_e_waste_weights', methods=['GET'])
 def get_e_waste_weights():
     try:
         # Map to shorten category names
@@ -2168,23 +2167,18 @@ def get_e_waste_weights():
         batches = db.batches.find()
 
         for batch in batches:
-            category = batch.get("product_category", "Unknown").split()[
-                0
-            ]  # Shorten name
+            category = batch.get("product_category", "Unknown").split()[0]  # Shorten name
             category = category_mapping.get(category, category)  # Map to short name
             items = batch.get("items", [])
-
+            
             for item_id in items:
-                item_data = db.collection_centre.find_one(
-                    {"pick_up_requests." + item_id: {"$exists": True}}
-                )
+                item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
                 if item_data:
                     item = item_data["pick_up_requests"].get(item_id)
                     if item:
                         weight = float(item.get("weight", 0))
-                        category_weights[category] = (
-                            category_weights.get(category, 0) + weight
-                        )
+                        category_weights[category] = category_weights.get(category, 0) + weight
+
 
         # Convert to list for JSON response
         data = [{"category": cat, "weight": wt} for cat, wt in category_weights.items()]
@@ -2193,6 +2187,10 @@ def get_e_waste_weights():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+    
+
+    ################################################## Retailer Section ############################################################
+
 
 
 if __name__ == "__main__":
