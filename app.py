@@ -2075,16 +2075,18 @@ def pp_confirm_pick_up():
 @app.route("/get_ewaste_metrics", methods=["GET"])
 def get_ewaste_metrics():
     try:
-        # Logging the start of the endpoint
         print("Starting /get_ewaste_metrics endpoint...")
 
-        # Calculate total e-waste collected
+        # Initialize metrics
         total_ewaste_collected = 0
-        batches = db.batches.find()  # Fetch all batches
+        total_batches = 0
+        compliant_batches = 0
+
+        # Calculate total e-waste collected
+        batches = db.batches.find()
         for batch in batches:
             items = batch.get("items", [])
             for item_id in items:
-                # Fetch the item's weight from collection_centre
                 item_data = db.collection_centre.find_one(
                     {"pick_up_requests." + item_id: {"$exists": True}}
                 )
@@ -2093,70 +2095,49 @@ def get_ewaste_metrics():
                     if item:
                         total_ewaste_collected += float(item.get("weight", 0))
 
-        # Step 1: Initialize a variable to calculate total and compliant batches
-        total_batches = 0
-        compliant_batches = 0
-
-        # Step 2: Get all batches, then calculate compliance based on `compliance_status`
-        batches = db.batches.find()  # Fetch all batches
-        for batch in batches:
-            # Check the producer_id for the batch
+        # Calculate compliance rate
+        for batch in db.batches.find():
             producer_id = batch.get("producer_id")
             if producer_id:
-                # Increment total batches
                 total_batches += 1
-                # Check if the batch is compliant
-                compliance_status = batch.get("compliance_status")
-                if compliance_status == "compliant":
+                if batch.get("compliance_status") == "compliant":
                     compliant_batches += 1
 
-        # Step 3: Calculate the compliance rate
         compliance_rate = 0
         if total_batches > 0:
             compliance_rate = (compliant_batches / total_batches) * 100
 
-        # E-waste processed in the last 4 months
-        current_date = datetime.now()
-        print(current_date)
-
-        # Calculate the date for 4 months ago (rough estimate, assuming 30 days per month)
+        # Calculate e-waste processed in the last 4 months
+        current_date = datetime.now().date()
         four_months_ago = current_date - timedelta(days=4 * 30)
 
-        # Initialize the processed e-waste total
+        recent_batches = db.batches.find({
+            "date": {"$gte": four_months_ago.isoformat(), "$lte": current_date.isoformat()}
+        })
+
         ewaste_processed_last_4_months = 0
+        for batch in recent_batches:
+            items = batch.get("items", [])
+            for item_id in items:
+                item_data = db.collection_centre.find_one(
+                    {"pick_up_requests." + item_id: {"$exists": True}}
+                )
+                if item_data:
+                    item = item_data["pick_up_requests"].get(item_id)
+                    if item:
+                        ewaste_processed_last_4_months += float(item.get("weight", 0))
 
-        # Query for batches processed in the last 4 months, ensuring that 'processed_weight' exists
-        processed_batches = db.batches.find(
-            {
-                "date": {"$gte": four_months_ago, "$lt": current_date},
-                "processed_weight": {
-                    "$exists": True
-                },  # Ensure the processed_weight field exists
-            }
-        )
-
-        # Sum up the weights for the previous 4 months
-        for batch in processed_batches:
-            # Add the processed_weight to the total for this batch
-            ewaste_processed_last_4_months += float(batch.get("processed_weight", 0))
-
-        # Print the result
-        print("E-waste processed in the last 4 months:", ewaste_processed_last_4_months)
-
-        # Return metrics as JSON response
-        return jsonify(
-            {
-                "status": "success",
-                "total_ewaste": total_ewaste_collected,
-                "compliance_rate": round(compliance_rate, 2),
-                "processed_this_month": ewaste_processed_last_4_months,
-            }
-        )
+        # Return JSON response
+        return jsonify({
+            "status": "success",
+            "total_ewaste": total_ewaste_collected,
+            "compliance_rate": round(compliance_rate, 2),
+            "processed_this_month": ewaste_processed_last_4_months,
+        })
 
     except Exception as e:
         print("Error in /get_ewaste_metrics:", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
-
 
 # Get the top 5 e waste metrics
 @app.route("/get_top_categories", methods=["GET"])
