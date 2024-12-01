@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      background-color: #fff;
+      padding: 30px;
+      max-width: 700px;
+      width: 100%;
+      font-size: 16px;
+      color: #333;
+      margin: 20px;
+    }
+
+    .card-header {
+      font-size: 2em;
+      margin-bottom: 25px;
+      color: #4f35a1;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .card-content p {
+      margin: 15px 0;
+      font-size: 1.1em;
+    }
+
+    .card-content strong {
+      color: #4f35a1;
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input,
+    select {
+      padding: 12px;
+      font-size: 16px;
+      margin: 5px 0;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      transition: border-color 0.3s;
+    }
+
+    input:hover,
+    select:hover {
+      border-color: #4f35a1;
+    }
+
+    .button-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    button {
+      background-color: #4f35a1;
+      color: #fff;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px;
+      transition: background-color 0.3s, transform 0.3s;
+      display: inline-block;
+    }
+
+    button:hover {
+      background-color: #6c4bc5;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .form-container {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-container h3 {
+      color: #4f35a1;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-container select {
+      width: 100%;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding-top: 60px;
+      text-align: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 400px;
+      margin: auto;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h2 {
+      color: #4f35a1;
+    }
+
+    .modal-content p {
+      font-size: 1.2em;
+      color: #333;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        padding: 15px;
+        width: 90%;
+      }
+
+      .button-container button {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="card-header">Product Details</div>
+    <div class="card-content">
+      <div class="input-container">
+        <p><strong>ID:</strong> <span id="product-id">Loading...</span></p>
+        <p><strong>Customer Name:</strong> <span id="customer-name">Loading...</span></p>
+        <p><strong>Contact Number:</strong> <span id="contact-number">Loading...</span></p>
+        <p><strong>Email:</strong> <span id="email">Loading...</span></p>
+        <p><strong>Aadhar:</strong> <span id="aadhar">Loading...</span></p>
+        <p><strong>Product Category:</strong> <span id="product-category">Loading...</span></p>
+        <p><strong>Expiry:</strong> <span id="expiry">Loading...</span></p>
+        <p><strong>Brand:</strong> <span id="brand">Loading...</span></p>
+        <p><strong>Model:</strong> <span id="model">Loading...</span></p>
+        <p><strong>Serial Number:</strong> <span id="serial-number">Loading...</span></p>
+        <p><strong>Purchase Date:</strong> <span id="purchase-date">Loading...</span></p>
+        <p><strong>Warranty:</strong> <span id="warranty">Loading...</span></p>
+      </div>
+    </div>
+
+    <div class="button-container">
+      <!-- Bold and red statement -->
+      <p style="color: red; font-size: 1.5em; font-weight: bold;">
+        Your product has expired.
+      </p>
+
+      <!-- Next line for user query -->
+      <p style="font-size: 1.2em;">
+        Do you want to extend the date or recycle the waste?
+      </p>
+
+      <!-- Buttons for user action -->
+      <button id="yes-button">Extend Expiry</button>
+      <button id="no-button">Recycle Waste</button>
+    </div>
+
+
+    <!-- Extension Form -->
+    <div class="form-container" id="extension-form">
+      <h3>Select New Expiry Date</h3>
+
+      <!-- Calendar input for selecting a new expiry date -->
+      <input type="date" id="extend-expiry" />
+
+      <button id="extend-btn">Extend Expiry</button>
+      <button class="cancel-btn" id="cancel-btn">Cancel</button>
+    </div>
+
+  </div>
+
+  <!-- Modal -->
+  <div id="expiry-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Expiry Extended</h2>
+      <p>You have successfully extended your expiry by <span id="extended-duration"></span>.</p>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script>
+    const productId = "674c753ff34a5e1b766bc756"; // Replace with the actual product ID
+
+    // Fetch product details
+    $(document).ready(function () {
+      // Fetch product details using AJAX
+      $.ajax({
+        type: 'GET',
+        url: `/get_product_details?id=${productId}`, // Your API URL
+        success: function (data) {
+          if (data.status === "success") {
+            const product = data.data;
+            $("#product-id").text(product._id);
+            $("#customer-name").text(product.customerName);
+            $("#contact-number").text(product.contactNumber);
+            $("#email").text(product.email);
+            $("#aadhar").text(product.aadhar);
+            $("#product-category").text(product.productCategory);
+            $("#expiry").text(product.expiry);
+            $("#brand").text(product.brand);
+            $("#model").text(product.model);
+            $("#serial-number").text(product.serialNumber);
+            $("#purchase-date").text(product.purchaseDate);
+            $("#warranty").text(product.warranty);
+          } else {
+            alert("Failed to load product details.");
+          }
+        },
+        error: function (error) {
+          console.error("Error loading product details:", error);
+        }
+      });
+
+      // Show form when "Yes" is clicked
+      $("#yes-button").click(function () {
+        $("#extension-form").show();
+      });
+
+      // Hide form when "No" is clicked
+      $("#no-button").click(function () {
+        alert("You chose not to extend the expiry.");
+      });
+
+      // Handle expiry extension
+      $("#extend-btn").click(function () {
+        const selectedDuration = $("#extend-expiry").val();
+        const currentExpiry = new Date($("#expiry").text());
+        currentExpiry.setMonth(currentExpiry.getMonth() + parseInt(selectedDuration));
+
+        const newExpiry = currentExpiry.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+
+        // Send expiry extension request using AJAX
+        $.ajax({
+          type: 'POST',
+          url: "/update_product_expiry", // Your API URL
+          contentType: "application/json",
+          data: JSON.stringify({
+            productId: productId,
+            newExpiry: newExpiry,
+          }),
+          success: function (data) {
+            if (data.status === "success") {
+              $("#extended-duration").text(`${selectedDuration} months`);
+              $("#expiry-modal").show();
+              $("#expiry").text(newExpiry);
+              $("#extension-form").hide(); // Hide the form
+            } else {
+              alert("Failed to extend expiry: " + data.message);
+            }
+          },
+          error: function (error) {
+            console.error("Error extending expiry:", error);
+          }
+        });
+      });
+
+      // Close modal
+      $(".close").click(function () {
+        $("#expiry-modal").hide();
+      });
+
+      // Close form on cancel
+      $("#cancel-btn").click(function () {
+        $("#extension-form").hide();
+      });
+    });
+
+  </script>
+  <script>
+    // Initialize Flatpickr for the input element
+    flatpickr("#extend-expiry", {
+      dateFormat: "Y-m-d",  // Format the selected date as YYYY-MM-DD
+      minDate: "today",     // Restrict selecting past dates
+    });
+  </script>
+
+</body>
+
+</html>
