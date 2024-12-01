@@ -2124,6 +2124,10 @@ def get_e_waste_weights():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+    
+
+    ################################################## Retailer Section ############################################################
+
 
 
 if __name__ == "__main__":

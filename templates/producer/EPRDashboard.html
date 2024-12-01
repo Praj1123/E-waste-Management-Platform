@@ -457,15 +457,15 @@
     // BAR CHART: Top E-Waste Categories
     // Function to fetch data and render the chart dynamically
     async function fetchTopCategories(producerId) {
-    try {
+      try {
         // Fetch the data from the backend
         const response = await fetch(`/get_top_categories?producer_id=${producerId}`);
         const data = await response.json();
 
         // Check for errors in the response
         if (data.error) {
-            console.error(data.error);
-            return;
+          console.error(data.error);
+          return;
         }
 
         // Extract categories and counts from the response
@@ -474,52 +474,52 @@
 
         // Define bar chart options with dynamic data
         var barChartOptions = {
-            series: [{
-                data: counts // Dynamically populate the data
-            }],
-            chart: {
-                type: 'bar',
-                height: 350,
-                toolbar: { show: false }
-            },
-            colors: ["#246dec", "#cc3c43", "#367952", "#f5b74f", "#4f35a1"],
-            plotOptions: {
-                bar: {
-                    distributed: true, // Different colors for bars
-                    borderRadius: 4,   // Rounded corners
-                    horizontal: false, // Vertical bar chart
-                    columnWidth: '40%' // Adjust width of bars
-                }
-            },
-            dataLabels: { enabled: false }, // Disable labels on bars
-            legend: { show: false },        // Disable legend
-            xaxis: {
-                categories: fullCategories // Directly use categories received from backend
-            },
-            yaxis: {
-                title: { text: "Item Count" } // Updated label for Y-axis
-            },
-            tooltip: {
-                custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-                    // Display full category name and count on hover
-                    const fullCategory = fullCategories[dataPointIndex]; // Get full name
-                    const count = series[0][dataPointIndex]; // Get count
-                    return `<div class="tooltip-box">
+          series: [{
+            data: counts // Dynamically populate the data
+          }],
+          chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: { show: false }
+          },
+          colors: ["#246dec", "#cc3c43", "#367952", "#f5b74f", "#4f35a1"],
+          plotOptions: {
+            bar: {
+              distributed: true, // Different colors for bars
+              borderRadius: 4,   // Rounded corners
+              horizontal: false, // Vertical bar chart
+              columnWidth: '40%' // Adjust width of bars
+            }
+          },
+          dataLabels: { enabled: false }, // Disable labels on bars
+          legend: { show: false },        // Disable legend
+          xaxis: {
+            categories: fullCategories // Directly use categories received from backend
+          },
+          yaxis: {
+            title: { text: "Item Count" } // Updated label for Y-axis
+          },
+          tooltip: {
+            custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+              // Display full category name and count on hover
+              const fullCategory = fullCategories[dataPointIndex]; // Get full name
+              const count = series[0][dataPointIndex]; // Get count
+              return `<div class="tooltip-box">
                             <strong>Category:</strong> ${fullCategory}<br>
                             <strong>Collected:</strong> ${count}
                           </div>`;
-                }
             }
+          }
         };
 
         // Render the chart
         var barChart = new ApexCharts(document.querySelector("#bar-chart"), barChartOptions);
         barChart.render();
 
-    } catch (error) {
+      } catch (error) {
         console.error("Error fetching data:", error);
+      }
     }
-}
 
 
 
@@ -586,10 +586,10 @@
                     },
                   },
                   tooltip: {
-                    enabled: true, // Tooltip enabled on hover
-                    y: {
-                      formatter: function (val) {
-                        return `${val} kg`; // Format the tooltip to show kg
+                    callbacks: {
+                      label: function (context) {
+                        const value = context.raw; // Get the raw value
+                        return `${value} kg`; // Format the label to include "kg"
                       },
                     },
                   },
@@ -627,7 +627,6 @@
       }
     }
 
-    // Call fetchMetrics on page load
     window.onload = fetchMetrics;
   </script>
 
