@@ -105,10 +105,55 @@
                 box-shadow: none;
             }
         }
+
+        /* Full-page loader styles */
+        .full-page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .full-page-loader.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="full-page-loader" id="fullPageLoader">
+        <div class="loader"></div>
+    </div>
     <nav class="navbar color text-light">
         <div class="container-fluid">
             <a class="navbar-brand text-light"><b>EcoRecycle</b></a>
@@ -140,67 +185,104 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="jquery-3.7.1.min.js"></script>
     <script>
-        var data = '';
-        $.ajax({
-            type: 'POST',
-            url: "{{url_for('get_pick_up_history')}}",
-            success: function (response) {
-                if (response.status == 'success') {
-                    document.getElementById('text_alert').style.display = 'none'
-                    data1 = JSON.parse(response.data)
-                    const tableBody = document.querySelector('#scheduleTable tbody');
-                    for (var i = 0; i < data1.length; i++) {
-                        var data = data1[i]
-                        for (key in data) {
-                            item = data[key]
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                    <td>${key}</td>
-                                    <td>${item.request_date}</td>
-                                    <td>${item.brand}</td>
-                                    <td>${item.product_name}</td>
-                                    <td>${item.category}</td>
-                                    <td class='text-success'>${item.status}</td>
-                                    <td><div class="dropdown">
+        function showLoader() {
+            const loader = document.getElementById('fullPageLoader');
+            loader.classList.add('active');
+        }
+        showLoader()
+        function hideLoader() {
+            const loader = document.getElementById('fullPageLoader');
+            loader.classList.remove('active');
+        }
+
+        window.onload = function () {
+            get_user_history()()
+        };
+
+        function get_user_history() {
+            var data = ''; // Initialize data variable
+            $.ajax({
+                type: 'POST',
+                url: "{{url_for('get_pick_up_history')}}",
+                success: function (response) {
+                    if (response.status == 'success') {
+                        document.getElementById('text_alert').style.display = 'none';
+                        var data1 = JSON.parse(response.data);
+                        // Check if data is empty
+                        if (data1.length === 0) {
+                            document.getElementById('text_alert').innerHTML = "No pick-up history found.";
+                            document.getElementById('text_alert').style.display = 'block';
+                            return; // Exit the function if no data
+                        }
+
+                        // Populate the table with the pick-up history data
+                        const tableBody = document.querySelector('#scheduleTable tbody');
+                        tableBody.innerHTML = ''; // Clear the table body before appending new rows
+
+                        for (var i = 0; i < data1.length; i++) {
+                            var itemData = data1[i]; // Renamed to avoid overwriting 'data'
+                            for (var key in itemData) {
+                                var item = itemData[key];
+                                item = item.pick_up_requests
+                                item = item[key]
+                                console.log(key, item)
+                                const row = document.createElement('tr');
+
+                                row.innerHTML = `
+                                <td>${key}</td>
+                                <td>${item.request_date}</td>
+                                <td>${item.brand}</td>
+                                <td>${item.product_name}</td>
+                                <td>${item.category}</td>
+                                <td class='text-success'>${item.status}</td>
+                                <td>
+                                    <div class="dropdown">
                                         <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                          See Details
+                                            See Details
                                         </button>
                                         <ul class="dropdown-menu">
-                                          <li><a class="dropdown-item" href="#">Model: ${item.model_name}</a></li>
-                                          <li><a class="dropdown-item" href="#">Quantity: ${item.qualtity} Unit</a></li>
-                                          <li><a class="dropdown-item" href="#">Weight: ${item.weight} kg</a></li>
-                                          <li><a class="dropdown-item" href="#">Base Price: ${item.product_baseprice}</a></li>
-                                          <li><a class="dropdown-item" href="#">Offerded Amount: ${item.deduce_amount}</a></li>
-                                          <li><a class="dropdown-item" href="#">Pick-up Charges: ${item.total_charges}</a></li>
-                                          <li><a class="dropdown-item" href="#">Address: ${item.address}, ${item.city}, ${item.state}, ${item.zip}</a></li>
-                                          <li><a class="dropdown-item text-success" onclick="sessionStorage.setItem('cc_id','${item.cc_id}');window.location.href = '/to_details_page'"><u>Visit</u></a></li>
+                                            <li><a class="dropdown-item" href="#">Model: ${item.model_name}</a></li>
+                                            <li><a class="dropdown-item" href="#">Quantity: ${item.quantity} Unit</a></li>
+                                            <li><a class="dropdown-item" href="#">Weight: ${item.weight} kg</a></li>
+                                            <li><a class="dropdown-item" href="#">Base Price: ${item.product_baseprice}</a></li>
+                                            <li><a class="dropdown-item" href="#">Offered Amount: ${item.deduce_amount}</a></li>
+                                            <li><a class="dropdown-item" href="#">Pick-up Charges: ${item.total_charges}</a></li>
+                                            <li><a class="dropdown-item" href="#">Address: ${item.address}, ${item.city}, ${item.state}, ${item.zip}</a></li>
+                                            <li><a class="dropdown-item text-success" onclick="sessionStorage.setItem('cc_id', '${item.cc_id}'); window.location.href = '/to_details_page'"><u>Visit</u></a></li>
                                         </ul>
-                                      </div></td>
-                                `;
+                                    </div>
+                                </td>
+                            `;
 
-                            tableBody.appendChild(row);
+                                tableBody.appendChild(row); // Add the row to the table
+                            }
+                        }
 
+                    } else {
+                        // Handle errors or no data cases from the backend
+                        document.getElementById('text_alert').style.display = 'block';
+                        if (response.status == 'error') {
+                            document.getElementById('text_alert').innerHTML = response.message;
+                            console.log(response.message);
+                        } else {
+                            document.getElementById('text_alert').innerHTML = 'Something went wrong.';
+                            alert('Something went wrong');
                         }
                     }
-
-                } else {
-                    if (response.status == 'error') {
-                        console.log(response.message)
-                        document.getElementById('text_alert').innerHTML = response.message
-                    } else {
-                        document.getElementById('text_alert').innerHTML = 'Something went wrong'
-                        alert('Something went wrong')
-                    }
+                },
+                error: function (error) {
+                    console.log(error);
+                    // Display technical error message
+                    document.getElementById('text_alert').style.display = 'block';
+                    document.getElementById('text_alert').innerHTML = "We encountered a technical problem.";
+                    alert('We encountered a technical problem');
+                },
+                complete: function () {
+                    hideLoader();
                 }
+            });
+        }
 
-            },
-            error: function (error) {
-                console.log(error)
-                document.getElementById('text_alert').innerHTML = "We encounter some technical problem"
-                alert('We encounter some technical problem')
-
-            }
-        })
     </script>
 
 </body>

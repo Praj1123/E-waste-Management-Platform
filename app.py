@@ -432,27 +432,55 @@ def send_data_to_database():
 @app.route("/get_pick_up_history", methods=["POST"])
 def get_pick_up_history():
     try:
+        # Reading user data
         with open("user_data.txt", "r") as file:
-            data = file.read()
-            data = json.loads(data)
-            user_data_id = data["_id"]["$oid"]
+            data = json.loads(file.read())
+            user_data_id = data.get("_id", {}).get("$oid")
+        
+        # Check if user_data_id exists
+        if not user_data_id:
+            return jsonify({"status": "error", "message": "User ID not found in user data."})
+
+        # Fetch the user data from database
         result = users_collection.find_one({"_id": ObjectId(user_data_id)})
-        result = result["pick_up_requests"]
+
+        # Check if result is empty or None
+        if not result:
+            return jsonify({"status": "error", "message": "User not found in database."})
+
+        # Get pick up requests of the user
+        pick_up_requests = result.get("pick_up_requests", {})
+
+        # Check if pick up requests are empty
+        if not pick_up_requests:
+            return jsonify({"status": "error", "message": "No pickup history found for this user."})
+
+        # Initialize an empty list to store the pickup history
         history_list = []
-        for key in result:
-            cc_id = result[key]
-            unique_id = key
-            data = collection_centre.find_one({"_id": ObjectId(cc_id)})
-            data = data["pick_up_requests"]
-            for item in data:
-                if unique_id == item:
-                    object = {unique_id: data[item]}
-                    history_list.append(object)
-        return jsonify(
-            {"status": "success", "message": "Data Found", "data": dumps(history_list)}
-        )
+
+        # Iterate over the user's pickup requests
+        for unique_id, cc_id in pick_up_requests.items():
+            data = collection_centre.find_one({"_id": ObjectId(cc_id)}, {f'pick_up_requests.{unique_id}': 1,'_id':0})
+
+            # Check if data exists for the collection center and if pickup data exists
+            if data:
+                object = {unique_id: data}
+                history_list.append(object)
+
+        # If no history is found
+        if not history_list:
+            return jsonify({"status": "error", "message": "No matching pickup history found."})
+        # Return the pickup history if found
+        return jsonify({
+            "status": "success",
+            "message": "Data Found",
+            "data": dumps(history_list)
+        })
+
     except Exception as e:
-        return jsonify({"status": "error", "message": e})
+        # Return error message in case of an exception
+        return jsonify({"status": "error", "message": str(e)})
+
 
 
 @app.route("/home")
@@ -563,6 +591,10 @@ def update_user_profile():
             )
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+    
+@app.route('/signup')
+def signup():
+    return render_template("users/otp_sign_up.html")
 
 
 # User Section
