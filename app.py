@@ -4,6 +4,7 @@ import random
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from bson import json_util
+
 # from bson import ObjectIdpip
 from bson.json_util import dumps
 import json
@@ -72,9 +73,11 @@ def payment_success():
 app.secret_key = "hellow_EcoRecycle"
 try:
     # Connect to the MongoDB server
-    client = MongoClient("mongodb+srv://prajwalchaudhari762:CBXSxTBk5NUvgHkN@cluster0.r0i8k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-    #mongodb://localhost:27017/
-    
+    client = MongoClient(
+        "mongodb+srv://prajwalchaudhari762:CBXSxTBk5NUvgHkN@cluster0.r0i8k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    )
+    # mongodb://localhost:27017/
+
     client.server_info()  # This will raise an exception if the connection fails
 
     print("Connection successful!")
@@ -88,7 +91,7 @@ users_collection = db["users"]
 
 
 ##########################################################################################################################################################################################
-# User Section  
+# User Section
 @app.route("/")
 def index():
     return render_template("start.html")
@@ -103,19 +106,22 @@ def to_qr_scanner():
 def to_user():
     return render_template("users/home.html")
 
+
 @app.route("/to_user_profile")
 def to_user_profile():
     return render_template("users/profile.html")
 
 
-@app.route('/get_profile_details',methods = ['POST'])
+@app.route("/get_profile_details", methods=["POST"])
 def get_profile_details():
     try:
         with open("user_data.txt", "r") as file:
             file_data = file.read()
             file_data = json.loads(file_data)
             user_id = file_data["_id"]["$oid"]
-        result = users_collection.find_one({'_id':ObjectId(user_id)},{'pick_up_requests':0,'_id':0})
+        result = users_collection.find_one(
+            {"_id": ObjectId(user_id)}, {"pick_up_requests": 0, "_id": 0}
+        )
         if result:
             return jsonify(
                 {"status": "success", "message": "Data found", "data": dumps(result)}
@@ -124,6 +130,7 @@ def get_profile_details():
             return jsonify({"status": "error", "message": "Data not found"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
 
 @app.route("/to_cc")
 def to_cc():
@@ -515,6 +522,46 @@ def check_status():
         )
 
 
+from flask import request, jsonify
+from bson import ObjectId
+import json
+
+
+@app.route("/update_user_profile", methods=["POST"])
+def update_user_profile():
+    try:
+        data_to_update = request.get_json()
+        if not data_to_update:
+            return jsonify(
+                {"status": "error", "message": "No data provided for update"}
+            )
+
+        with open("user_data.txt", "r") as file:
+            raw_data = file.read()
+
+        if not raw_data:
+            return jsonify({"status": "error", "message": "User is signed out"})
+
+        user_data = json.loads(raw_data)
+        user_id = user_data.get("_id", {}).get("$oid")
+        if not user_id:
+            return jsonify({"status": "error", "message": "Invalid user ID"})
+
+        result = users_collection.update_one(
+            {"_id": ObjectId(user_id)}, {"$set": data_to_update}
+        )
+        if result.modified_count > 0:
+            return jsonify(
+                {"status": "success", "message": "Profile updated successfully"}
+            )
+        else:
+            return jsonify(
+                {"status": "error", "message": "No changes made to the profile"}
+            )
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
 # User Section
 ###############################################################################################################################################
 
@@ -528,43 +575,55 @@ def p_profile():
     return render_template("producer/profile.html")
 
 
-@app.route('/get_delivery_details',methods=['POST'])
+@app.route("/get_delivery_details", methods=["POST"])
 def get_delivery_details():
     try:
-        unique_id = request.form['unique_id']
+        unique_id = request.form["unique_id"]
         result = batches.find_one({"unique_id": unique_id})
         if result:
-            return jsonify({"status": "success", "message": "Data Found", "data": dumps(result)})
+            return jsonify(
+                {"status": "success", "message": "Data Found", "data": dumps(result)}
+            )
         else:
             return jsonify({"status": "error", "message": "Data Not Found"})
     except Exception as e:
         return jsonify({"status": "error", "message": e})
 
 
-@app.route('/to_ERP_dashboard')
+@app.route("/to_ERP_dashboard")
 def to_ERP_dashboard():
-    return render_template('producer/EPRDashboard.html')
+    return render_template("producer/EPRDashboard.html")
 
-@app.route('/to_epr_report')
+
+@app.route("/to_epr_report")
 def to_epr_report():
-    return render_template('producer/EPRReport.html')
+    return render_template("producer/EPRReport.html")
 
-@app.route("/mark_dispatched", methods=['POST'])
+
+@app.route("/mark_dispatched", methods=["POST"])
 def mark_dispatched():
     try:
-        unique_id = request.form['unique_id']
-        result = batches.update_one({"unique_id": unique_id}, {"$set": {"status": "Dispatched"}})
-        
+        unique_id = request.form["unique_id"]
+        result = batches.update_one(
+            {"unique_id": unique_id}, {"$set": {"status": "Dispatched"}}
+        )
+
         if result.modified_count > 0:
-            return jsonify({"status": "success", "message": "Batch Marked 'Dispatched' Successfully"})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Batch Marked 'Dispatched' Successfully",
+                }
+            )
         else:
-            return jsonify({"status": "error", "message": "Not able to mark 'Dispatched'"})
-    
+            return jsonify(
+                {"status": "error", "message": "Not able to mark 'Dispatched'"}
+            )
+
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-                       
-    
+
 @app.route("/p_sign_in")
 def p_sign_in():
     return render_template("producer/sign_in_sign_up.html")
@@ -1815,7 +1874,12 @@ def p_change_status():
                 {"status": "success", "message": "Status Update Successfully"}
             )
         else:
-            return jsonify({"status": "error", "message": "Status is already updated with the same"})
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": "Status is already updated with the same",
+                }
+            )
     except Exception as e:
         print(e)
         return jsonify({"message": str(e)})
@@ -1971,7 +2035,8 @@ def pp_confirm_pick_up():
 
 #############Pick-up Patner Section###########################################################################################################
 
-@app.route('/get_ewaste_metrics', methods=['GET'])
+
+@app.route("/get_ewaste_metrics", methods=["GET"])
 def get_ewaste_metrics():
     try:
         # Logging the start of the endpoint
@@ -1979,12 +2044,14 @@ def get_ewaste_metrics():
 
         # Calculate total e-waste collected
         total_ewaste_collected = 0
-        batches = db.batches.find()  # Fetch all batches        
+        batches = db.batches.find()  # Fetch all batches
         for batch in batches:
             items = batch.get("items", [])
             for item_id in items:
                 # Fetch the item's weight from collection_centre
-                item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
+                item_data = db.collection_centre.find_one(
+                    {"pick_up_requests." + item_id: {"$exists": True}}
+                )
                 if item_data:
                     item = item_data["pick_up_requests"].get(item_id)
                     if item:
@@ -2015,68 +2082,76 @@ def get_ewaste_metrics():
         # E-waste processed in the last 4 months
         current_date = datetime.now()
 
-# Calculate the date for 4 months ago (rough estimate, assuming 30 days per month)
-        four_months_ago = current_date - timedelta(days=4*30)
+        # Calculate the date for 4 months ago (rough estimate, assuming 30 days per month)
+        four_months_ago = current_date - timedelta(days=4 * 30)
 
-# Initialize the processed e-waste total
+        # Initialize the processed e-waste total
         ewaste_processed_last_4_months = 0
 
-# Query for batches processed in the last 4 months, ensuring that 'processed_weight' exists
-        processed_batches = db.batches.find({
-            "date": {"$gte": four_months_ago, "$lt": current_date},
-            "processed_weight": {"$exists": True}  # Ensure the processed_weight field exists
-        })
+        # Query for batches processed in the last 4 months, ensuring that 'processed_weight' exists
+        processed_batches = db.batches.find(
+            {
+                "date": {"$gte": four_months_ago, "$lt": current_date},
+                "processed_weight": {
+                    "$exists": True
+                },  # Ensure the processed_weight field exists
+            }
+        )
 
-# Sum up the weights for the previous 4 months
+        # Sum up the weights for the previous 4 months
         for batch in processed_batches:
-    # Add the processed_weight to the total for this batch
+            # Add the processed_weight to the total for this batch
             ewaste_processed_last_4_months += float(batch.get("processed_weight", 0))
 
-# Print the result
+        # Print the result
         print("E-waste processed in the last 4 months:", ewaste_processed_last_4_months)
 
-        
         # Return metrics as JSON response
-        return jsonify({
-            "status": "success",
-            "total_ewaste": total_ewaste_collected,
-            "compliance_rate": round(compliance_rate, 2),
-            "processed_this_month": ewaste_processed_last_4_months
-        })
+        return jsonify(
+            {
+                "status": "success",
+                "total_ewaste": total_ewaste_collected,
+                "compliance_rate": round(compliance_rate, 2),
+                "processed_this_month": ewaste_processed_last_4_months,
+            }
+        )
 
     except Exception as e:
         print("Error in /get_ewaste_metrics:", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
-    
-    
-#Get the top 5 e waste metrics
-@app.route('/get_top_categories', methods=['GET'])
+
+
+# Get the top 5 e waste metrics
+@app.route("/get_top_categories", methods=["GET"])
 def get_top_categories():
     # Get the producer_id from query parameters
-    producer_id = request.args.get('producer_id', None)
+    producer_id = request.args.get("producer_id", None)
     if not producer_id:
         return jsonify({"error": "producer_id is required"}), 400
 
     # Query MongoDB to count items per category for the specified producer
     pipeline = [
         {"$match": {"producer_id": producer_id}},  # Filter by producer_id
-        {"$group": {
-            "_id": "$product_category",
-            "count": {"$sum": 1}  # Count occurrences of each category
-        }},
+        {
+            "$group": {
+                "_id": "$product_category",
+                "count": {"$sum": 1},  # Count occurrences of each category
+            }
+        },
         {"$sort": {"count": -1}},  # Sort by count in descending order
-        {"$limit": 5}  # Get the top 5 categories
+        {"$limit": 5},  # Get the top 5 categories
     ]
     top_categories = list(db.batches.aggregate(pipeline))
 
     # Prepare data for the frontend
     response = {
         "categories": [item["_id"] for item in top_categories],
-        "counts": [item["count"] for item in top_categories]
+        "counts": [item["count"] for item in top_categories],
     }
     return jsonify(response)
 
-@app.route('/get_e_waste_weights', methods=['GET'])
+
+@app.route("/get_e_waste_weights", methods=["GET"])
 def get_e_waste_weights():
     try:
         # Map to shorten category names
@@ -2085,7 +2160,7 @@ def get_e_waste_weights():
             "computer": "Computers",
             "mobile-devices": "Mobile Devices",
             "gaming-accessories": "Gaming Accessories",
-            "networking-equipment": "Networking Equipment"
+            "networking-equipment": "Networking Equipment",
         }
 
         # Aggregate weight by category
@@ -2093,17 +2168,23 @@ def get_e_waste_weights():
         batches = db.batches.find()
 
         for batch in batches:
-            category = batch.get("product_category", "Unknown").split()[0]  # Shorten name
+            category = batch.get("product_category", "Unknown").split()[
+                0
+            ]  # Shorten name
             category = category_mapping.get(category, category)  # Map to short name
             items = batch.get("items", [])
-            
+
             for item_id in items:
-                item_data = db.collection_centre.find_one({"pick_up_requests." + item_id: {"$exists": True}})
+                item_data = db.collection_centre.find_one(
+                    {"pick_up_requests." + item_id: {"$exists": True}}
+                )
                 if item_data:
                     item = item_data["pick_up_requests"].get(item_id)
                     if item:
                         weight = float(item.get("weight", 0))
-                        category_weights[category] = category_weights.get(category, 0) + weight
+                        category_weights[category] = (
+                            category_weights.get(category, 0) + weight
+                        )
 
         # Convert to list for JSON response
         data = [{"category": cat, "weight": wt} for cat, wt in category_weights.items()]
