@@ -164,7 +164,6 @@
         textarea {
             resize: none;
         }
-
         .form-section {
             margin-bottom: 25px;
             padding: 15px;
@@ -172,9 +171,11 @@
             border-radius: 8px;
             border: 1px solid #ddd;
         }
-
         .form-section:hover {
             background-color: #eef2f9;
+        }
+        #log_out{
+            cursor: pointer;
         }
     </style>
 </head>
@@ -194,8 +195,8 @@
                                 Product Entry</a></li>
                         <li class="nav-item"><a class="nav-link" href="#"
                                 style="text-align: left;font-weight:bold">Total Sold Products</a></li>
-                        <li class="nav-item"><a class="nav-link text-danger" href="#"
-                                style="text-align: left;font-weight:bold">Logout</a></li>
+                        <li class="nav-item"><a class="nav-link text-danger" style="text-align: left;font-weight:bold"
+                                id="log_out">Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -358,7 +359,7 @@
                     } else {
                         console.log(response.message);
                         alert(response.message);
-                        window.location.href = "/to_retailer";
+                        window.location.href = "/retailer_login";
                     }
                 },
                 error: function (error) {
@@ -368,7 +369,27 @@
         }
         check_retailer_session()
 
-        // Function to show expiry based on selected category
+
+        document.getElementById('log_out').addEventListener('click', () => {
+            if (confirm('Are you sure you want to log out!!')) {
+                $.ajax({
+                    type: "POST",
+                    url: "{{url_for('retailer_sign_out')}}", // Use the pre-defined URL
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            window.location.href = "/retailer_login";
+                        } else {
+                            console.log(response.message);
+                            alert(response.message);
+                        }
+                    },
+                    error: function (error) {
+                        console.error('AJAX Error:', error);
+                    }
+                });
+            }
+        })
+
         function showExpiry() {
             var category = document.getElementById("product_category").value;
             var expiryInput = document.getElementById("expiry");

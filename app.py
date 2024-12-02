@@ -123,7 +123,10 @@ def to_user_profile():
 
 @app.route("/to_retailer")
 def to_retailer():
-    return render_template("retailer/login.html")
+    return render_template("retailer/retailer_dashboard.html")
+    
+def to_retailer():
+    return render_template("retailer/retailer_dashboard.html")
 
 
 @app.route("/get_profile_details", methods=["POST"])
@@ -2060,32 +2063,51 @@ def get_pick_up_details():
 def pp_confirm_pick_up():
     try:
         # Get parameters from request
-        cc_id = request.form["cc_id"]
-        request_id = request.form["request_id"]
-        status = request.form["status"]
+        data = request.get_json()
+        cc_id = data.get("cc_id")
+        request_id = data.get("request_id")
 
-        # Update the status in the nested pick_up_requests object
-        result = collection_centre.update_one(
-            {
-                "_id": ObjectId(cc_id),
-                f"pick_up_requests.{request_id}": {"$exists": True},
-            },
-            {"$set": {f"pick_up_requests.{request_id}.status": status}},
-        )
+        # Validate inputs
+        if not cc_id or not request_id:
+            return jsonify({"status": "error", "message": "Missing required fields: cc_id or request_id."}), 400
+
+        # Ensure cc_id is a valid ObjectId
+        try:
+            cc_id = ObjectId(cc_id)
+        except Exception:
+            return jsonify({"status": "error", "message": "Invalid cc_id format."}), 400
+
+        # Prepare the update path
+        update_path = f"pick_up_requests.{request_id}"
+
+        # Construct the update query
+        update_data = {f"{update_path}.{key}": value for key, value in data.items() if key not in ["cc_id", "request_id"]}
+
+        if not update_data:
+            return jsonify({"status": "error", "message": "No valid fields to update."}), 400
+
+        # Perform the update
+        result = collection_centre.update_one({"_id": cc_id}, {"$set": update_data})
 
         # Check the update result
-        if result.modified_count == 1:
-            return jsonify({"status": "success"})
-        else:
-            return jsonify(
-                {
-                    "status": "error",
-                    "message": "Pick-up request not found or already updated.",
-                }
-            )
+        if result.matched_count == 0:
+            return jsonify({
+                "status": "error",
+                "message": "Collection Centre not found.",
+            }), 404
+
+        if result.modified_count == 0:
+            return jsonify({
+                "status": "error",
+                "message": "No changes made to the pick-up request.",
+            }), 400
+
+        return jsonify({"status": "success", "message": "Pick-up request updated successfully."})
 
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 
 
 #############Pick-up Patner Section###########################################################################################################
@@ -2404,6 +2426,19 @@ def get_doc_id():
     }
     
     return jsonify(response), 200
+
+
+@app.route('/retailer_login')
+def retailer_login():
+    return render_template('/retailer/login.html')
+
+@app.route("/retailer_sign_out",methods=["POST"])
+def retailer_sign_out():
+    session.pop("retainer_id", None)
+    if session.get("retainer_id") is None:
+        return jsonify({"status": "success", "message": "Sign Out Successfully"})
+    else:
+        return jsonify({"status": "error", "message": "Failed to Sign Out"})
 
 
 @app.route('/get_expirary_data',methods=['POST'])
