@@ -2384,9 +2384,54 @@ def get_product_count():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+@app.route('/update_expirary')
+def update_expirary():
+    return render_template('/retailer/expiry_update.html')
 
+
+@app.route('/get_doc_id', methods=['GET'])
+def get_doc_id():
+    # Get the document ID from the query parameter
+    document_id = request.args.get('id')  # This corresponds to ?id= in the URL
+    if not document_id:
+        return jsonify({"error": "Document ID is missing"}), 400
+    
+    # Process the document ID (e.g., fetch or update the document in the database)
+    # Example response
+    response = {
+        "message": "Document processed successfully",
+        "document_id": document_id
+    }
+    
+    return jsonify(response), 200
+
+
+@app.route('/get_expirary_data',methods=['POST'])
+def get_expirary_data():
+    try:
+        data = request.get_json()
+        id = data.get("doc_id")
+        result = retailer_collection.find_one({"_id": ObjectId(id)})
+        if result:
+            return jsonify({"status": "success", "data": dumps(result)})
+        else:
+            return jsonify({"status": "error", "message": "No Data Found"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+    
+@app.route('/extend_expiry',methods=['POST'])
+def extend_expiry():
+    try:
+        data = request.get_json()
+        id = data.get("document_id")
+        result = retailer_collection.update_one({"_id": ObjectId(id)},{"$set": {"updated_expiry": data.get("updated_expiry")}})
+        if result.modified_count > 0:
+            return jsonify({"status": "success", "message": "Expiry Date Updated Successfully"})
+        else:
+            return jsonify({"status": "error", "message": "No Data Found"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+    
 ################################ Retaier Section #######################################
-
-
 if __name__ == "__main__":
     app.run(debug=True)

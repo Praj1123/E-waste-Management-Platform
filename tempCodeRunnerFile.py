@@ -1,1 +1,0 @@
-to_retailer_dashboard
