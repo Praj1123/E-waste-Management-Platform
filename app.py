@@ -33,12 +33,6 @@ RAZORPAY_KEY_SECRET = "----------"
 # Initialize Razorpay client
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
-
-### Razor Pay Section
-# Razorpay credentials
-RAZORPAY_KEY_ID = "rzp_test_l57LNe7mJd4jWC"
-RAZORPAY_KEY_SECRET = "NMaXcuiRPNWPLygM2mn37gvw"
-
 # Initialize Razorpay client
 client1 = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
