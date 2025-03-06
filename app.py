@@ -29,7 +29,7 @@ app = Flask(__name__)
 
 # Razorpay credentials
 RAZORPAY_KEY_ID = "rzp_test_l57LNe7mJd4jWC"
-RAZORPAY_KEY_SECRET = "NMaXcuiRPNWPLygM2mn37gvw"
+RAZORPAY_KEY_SECRET = "----------"
 # Initialize Razorpay client
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
@@ -83,7 +83,7 @@ app.secret_key = "hellow_EcoRecycle"
 try:
     # Connect to the MongoDB server
     client = MongoClient(
-        "mongodb+srv://prajwalchaudhari762:CBXSxTBk5NUvgHkN@cluster0.r0i8k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+       ----mongodb url
     )
     # mongodb://localhost:27017/
 
